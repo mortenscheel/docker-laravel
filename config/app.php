@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => 'Application',
+    'name' => 'Laravel Docker',
 
     /*
     |--------------------------------------------------------------------------
@@ -69,5 +69,7 @@ return [
     'providers' => [
         App\Providers\AppServiceProvider::class,
     ],
-
+    'aliases' => [
+        'Process' => \App\Facades\ProcessFacade::class,
+    ],
 ];
