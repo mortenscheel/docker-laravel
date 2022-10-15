@@ -4,10 +4,10 @@ namespace App\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class ProcessFacade extends Facade
+class ProjectFacade extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'process-manager';
+        return 'project-manager';
     }
 }
