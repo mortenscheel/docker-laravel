@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Concerns\RendersDiffs;
+use App\Service\ProcessService;
 use App\Service\ProjectService;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
@@ -12,15 +13,16 @@ class InitCommand extends Command
 {
     use RendersDiffs;
 
-    protected $signature = 'init {--slug=}
-                                 {--username=laravel}
-                                 {--uid=1000}
-                                 {--php=8.1}
-                                 {--node=16}';
+    protected $signature = 'init {--slug=             : Slug used for container prefix}
+                                 {--username=laravel  : Name of the php-fpm user}
+                                 {--uid=1000          : Uid of the php-fpm user}
+                                 {--php=8.1           : PHP-FPM version}
+                                 {--node=16           : NodeJS version}
+                                 {--f|force           : Skip confirmations}';
 
     protected $description = 'Initialize Docker environment';
 
-    public function handle(ProjectService $project): int
+    public function handle(ProjectService $project, ProcessService $process): int
     {
         if (! $project->isLaravelProject()) {
             $this->error('No laravel project detected');
@@ -32,13 +34,8 @@ class InitCommand extends Command
 
             return self::FAILURE;
         }
-        $slug = $this->option('slug') ?: $this->ask('Select a slug', Str::slug($project->pwd()));
-        if (! $slug) {
-            $this->error('Slug cannot be empty');
-
-            return self::FAILURE;
-        }
-        $slug = Str::slug($slug);
+        $force = $this->option('force');
+        $slug = Str::slug($this->option('slug') ?: $project->pwd());
         $uid = $this->option('uid');
         $username = $this->option('username');
         $phpVersion = $this->option('php');
@@ -50,7 +47,9 @@ class InitCommand extends Command
             '%php_version%' => $phpVersion,
             '%node_version%' => $nodeVersion,
         ];
-        $files = Finder::create()->in(base_path('docker-stubs'))->files();
+        $files = Finder::create()->in(base_path('docker-stubs'))->ignoreDotFiles(false)->files();
+        $dockerFilesModified = false;
+        $envModified = false;
         foreach ($files as $file) {
             $contents = Str::replace(
                 array_keys($replacements),
@@ -59,27 +58,50 @@ class InitCommand extends Command
             );
             if (($existing = $project->disk()->get($file->getRelativePathname())) && $existing !== $contents) {
                 $this->renderDiff($existing, $contents);
-                if (! $this->confirm(sprintf('Accept these changes to %s?', $file->getRelativePathname()))) {
+                if (! $force && ! $this->confirm(sprintf('Accept these changes to %s?', $file->getRelativePathname()))) {
                     continue;
                 }
             }
             if ($contents !== $existing) {
                 $project->disk()->put($file->getRelativePathname(), $contents);
                 $this->comment('+ '.$file->getRelativePathname());
+                $dockerFilesModified = true;
             }
         }
+        if (! $dockerFilesModified) {
+            $this->comment('No changes to Docker files');
+        }
         $envOriginal = $project->disk()->get('.env');
-        $envModified = preg_replace(['/^DB_HOST=.*$/m'], ['DB_HOST=db'], $envOriginal);
-        if ($envOriginal === $envModified) {
-            $this->info('No changes to .env');
+        $envUpdated = $this->updateOrAppendLine('DB_HOST', 'DB_HOST=db', $envOriginal);
+        if (! $process->isUp()) {
+            $envUpdated = $this->updateOrAppendLine('APP_PORT', 'APP_PORT='.$process->findAvailablePort(80), $envUpdated);
+            $envUpdated = $this->updateOrAppendLine('FORWARD_DB_PORT', 'FORWARD_DB_PORT='.$process->findAvailablePort(3306), $envUpdated);
+        }
+        if ($envOriginal === $envUpdated) {
+            $this->comment('No changes to .env');
         } else {
-            $this->renderDiff($envOriginal, $envModified);
-            if ($this->confirm('Accept changes to .env?')) {
-                $project->disk()->put('.env', $envModified);
+            $this->renderDiff($envOriginal, $envUpdated);
+            if ($force || $this->confirm('Accept changes to .env?')) {
+                $project->disk()->put('.env', $envUpdated);
+                $envModified = true;
             }
         }
         $this->info('Initialization complete');
+        if (($dockerFilesModified || $envModified) &&
+            ($force || $this->confirm('Rebuild containers?'))) {
+            $process->dockerCompose(['build']);
+        }
 
         return self::SUCCESS;
+    }
+
+    private function updateOrAppendLine(string $match, string $line, string $subject): string
+    {
+        $pattern = sprintf('/^%s.*$/m', preg_quote($match, '/'));
+        if (preg_match($pattern, $subject)) {
+            return preg_replace($pattern, $line, $subject);
+        }
+
+        return rtrim($subject).PHP_EOL.$line.PHP_EOL;
     }
 }

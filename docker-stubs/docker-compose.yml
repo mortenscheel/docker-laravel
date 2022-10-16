@@ -6,16 +6,20 @@ services:
     build:
       args:
         uid: %uid%
-        user: %username%
       context: ./docker/php-fpm
       dockerfile: dev.Dockerfile
-    user: %username%
+    environment:
+      PHP_IDE_CONFIG: serverName=%slug%
+    user: laravel
     restart: "no"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./:/var/www
       - "${COMPOSER_HOME}:/home/%username%/.composer"
+    depends_on:
+      - db
+      - nginx
     networks:
       - app-network
 
@@ -51,6 +55,17 @@ services:
     volumes:
       - ./:/var/www
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - app-network
+
+  selenium:
+    image: "${SELENIUM_IMAGE:-selenium/standalone-chrome}"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - '/dev/shm:/dev/shm'
+    depends_on:
+      - app
     networks:
       - app-network
 

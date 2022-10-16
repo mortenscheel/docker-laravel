@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Storage;
 
 class ProjectService
 {
+    public function __construct(private ProcessService $process)
+    {
+    }
+
     public function hasEnvFile(): bool
     {
         return File::exists('.env');
@@ -15,7 +19,7 @@ class ProjectService
 
     public function isLaravelProject()
     {
-        return ProcessService::run('grep laravel\/framework composer.json');
+        return $this->process->run('grep laravel\/framework composer.json')->isSuccessful();
     }
 
     public function isDockerProject()
