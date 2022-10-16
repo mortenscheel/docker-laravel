@@ -70,9 +70,4 @@ return [
         App\Providers\AppServiceProvider::class,
         \Illuminate\Filesystem\FilesystemServiceProvider::class,
     ],
-
-    'aliases' => [
-        'Process' => \App\Facades\ProcessFacade::class,
-        'Project' => \App\Facades\ProjectFacade::class,
-    ],
 ];

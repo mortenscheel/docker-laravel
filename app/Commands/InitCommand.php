@@ -3,9 +3,9 @@
 namespace App\Commands;
 
 use App\Concerns\RendersDiffs;
+use App\Service\ProjectService;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
-use Project;
 use Symfony\Component\Finder\Finder;
 
 class InitCommand extends Command
@@ -20,12 +20,19 @@ class InitCommand extends Command
 
     protected $description = 'Initialize Docker environment';
 
-    public function handle(): int
+    public function handle(ProjectService $project): int
     {
-        if (! $this->isValidProject()) {
+        if (! $project->isLaravelProject()) {
+            $this->error('No laravel project detected');
+
             return self::FAILURE;
         }
-        $slug = $this->option('slug') ?: $this->ask('Select a slug', Str::slug(Project::pwd()));
+        if (! $project->hasEnvFile()) {
+            $this->error('No .env file detected');
+
+            return self::FAILURE;
+        }
+        $slug = $this->option('slug') ?: $this->ask('Select a slug', Str::slug($project->pwd()));
         if (! $slug) {
             $this->error('Slug cannot be empty');
 
@@ -36,7 +43,6 @@ class InitCommand extends Command
         $username = $this->option('username');
         $phpVersion = $this->option('php');
         $nodeVersion = $this->option('node');
-        $destination = Project::disk();
         $replacements = [
             '%slug%' => $slug,
             '%uid%' => $uid,
@@ -51,45 +57,29 @@ class InitCommand extends Command
                 array_values($replacements),
                 $file->getContents()
             );
-            if (($existing = $destination->get($file->getRelativePathname())) && $existing !== $contents) {
+            if (($existing = $project->disk()->get($file->getRelativePathname())) && $existing !== $contents) {
                 $this->renderDiff($existing, $contents);
                 if (! $this->confirm(sprintf('Accept these changes to %s?', $file->getRelativePathname()))) {
                     continue;
                 }
             }
             if ($contents !== $existing) {
-                $destination->put($file->getRelativePathname(), $contents);
+                $project->disk()->put($file->getRelativePathname(), $contents);
                 $this->comment('+ '.$file->getRelativePathname());
             }
         }
-        $envOriginal = $destination->get('.env');
+        $envOriginal = $project->disk()->get('.env');
         $envModified = preg_replace(['/^DB_HOST=.*$/m'], ['DB_HOST=db'], $envOriginal);
         if ($envOriginal === $envModified) {
             $this->info('No changes to .env');
         } else {
             $this->renderDiff($envOriginal, $envModified);
             if ($this->confirm('Accept changes to .env?')) {
-                $destination->put('.env', $envModified);
+                $project->disk()->put('.env', $envModified);
             }
         }
         $this->info('Initialization complete');
 
         return self::SUCCESS;
-    }
-
-    private function isValidProject()
-    {
-        if (! Project::isLaravelProject()) {
-            $this->warn('No Laravel project detected.');
-
-            return false;
-        }
-        if (! Project::hasEnvFile()) {
-            $this->warn('No .env file detected.');
-
-            return false;
-        }
-
-        return true;
     }
 }

@@ -1,13 +1,12 @@
 <?php
 
-namespace App;
+namespace App\Service;
 
-use App\Facades\ProcessFacade;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
-class ProjectManager
+class ProjectService
 {
     public function hasEnvFile(): bool
     {
@@ -16,7 +15,7 @@ class ProjectManager
 
     public function isLaravelProject()
     {
-        return ProcessFacade::run('grep laravel\/framework composer.json');
+        return ProcessService::run('grep laravel\/framework composer.json');
     }
 
     public function isDockerProject()

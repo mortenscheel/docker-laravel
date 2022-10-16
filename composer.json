@@ -22,7 +22,6 @@
         "sebastian/diff": "^4.0"
     },
     "require-dev": {
-        "barryvdh/laravel-ide-helper": "^2.12",
         "intonate/tinker-zero": "^1.2",
         "laravel/pint": "^1.2",
         "mockery/mockery": "^1.4.4",

@@ -2,9 +2,8 @@
 
 namespace App\Providers;
 
-use App\ProcessManager;
-use App\ProjectManager;
-use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
+use App\Service\ProcessService;
+use App\Service\ProjectService;
 use Illuminate\Support\ServiceProvider;
 use Intonate\TinkerZero\TinkerZeroServiceProvider;
 
@@ -17,8 +16,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->bind('process-manager', ProcessManager::class);
-        $this->app->bind('project-manager', ProjectManager::class);
+        $this->app->bind('process-manager', ProcessService::class);
+        $this->app->bind('project-manager', ProjectService::class);
     }
 
     /**
@@ -30,7 +29,6 @@ class AppServiceProvider extends ServiceProvider
     {
         if ($this->app->environment('development')) {
             $this->app->register(TinkerZeroServiceProvider::class);
-            $this->app->register(IdeHelperServiceProvider::class);
         }
     }
 }
