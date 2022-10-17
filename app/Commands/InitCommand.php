@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use App\Concerns\RendersDiffs;
-use App\Service\ProcessService;
+use App\Facades\Process;
 use App\Service\ProjectService;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Commands\Command;
@@ -22,7 +22,7 @@ class InitCommand extends Command
 
     protected $description = 'Initialize Docker environment';
 
-    public function handle(ProjectService $project, ProcessService $process): int
+    public function handle(ProjectService $project): int
     {
         if (! $project->isLaravelProject()) {
             $this->error('No laravel project detected');
@@ -58,7 +58,7 @@ class InitCommand extends Command
             );
             if (($existing = $project->disk()->get($file->getRelativePathname())) && $existing !== $contents) {
                 $this->renderDiff($existing, $contents);
-                if (! $force && ! $this->confirm(sprintf('Accept these changes to %s?', $file->getRelativePathname()))) {
+                if (! $force && ! $this->confirm(sprintf('Accept these changes to %s?', $file->getRelativePathname()), true)) {
                     continue;
                 }
             }
@@ -73,23 +73,23 @@ class InitCommand extends Command
         }
         $envOriginal = $project->disk()->get('.env');
         $envUpdated = $this->updateOrAppendLine('DB_HOST', 'DB_HOST=db', $envOriginal);
-        if (! $process->isUp()) {
-            $envUpdated = $this->updateOrAppendLine('APP_PORT', 'APP_PORT='.$process->findAvailablePort(80), $envUpdated);
-            $envUpdated = $this->updateOrAppendLine('FORWARD_DB_PORT', 'FORWARD_DB_PORT='.$process->findAvailablePort(3306), $envUpdated);
+        if (! $project->isUp()) {
+            $envUpdated = $this->updateOrAppendLine('APP_PORT', 'APP_PORT='.$project->findAvailablePort(80), $envUpdated);
+            $envUpdated = $this->updateOrAppendLine('FORWARD_DB_PORT', 'FORWARD_DB_PORT='.$project->findAvailablePort(3306), $envUpdated);
         }
         if ($envOriginal === $envUpdated) {
             $this->comment('No changes to .env');
         } else {
             $this->renderDiff($envOriginal, $envUpdated);
-            if ($force || $this->confirm('Accept changes to .env?')) {
+            if ($force || $this->confirm('Accept changes to .env?', true)) {
                 $project->disk()->put('.env', $envUpdated);
                 $envModified = true;
             }
         }
         $this->info('Initialization complete');
         if (($dockerFilesModified || $envModified) &&
-            ($force || $this->confirm('Rebuild containers?'))) {
-            $process->dockerCompose(['build']);
+            ($force || $this->confirm('Build containers?', true))) {
+            Process::dockerCompose('build')->interactive()->run();
         }
 
         return self::SUCCESS;

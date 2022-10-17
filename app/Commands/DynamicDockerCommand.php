@@ -4,7 +4,7 @@
 
 namespace App\Commands;
 
-use App\Service\ProcessService;
+use App\Facades\Process;
 use App\Service\ProjectService;
 use function array_slice;
 use function count;
@@ -23,16 +23,19 @@ class DynamicDockerCommand extends Command
 
     private array $tokens;
 
-    public function handle(ProcessService $process, ProjectService $project): int
+    public function handle(ProjectService $project): int
     {
         if (! $project->isDockerProject()) {
             $this->error('No docker-compose environment detected');
 
             return self::FAILURE;
         }
+        $process = Process::make();
         // Local docker-compose commands
         switch ($this->tokens[0]) {
             case 'build':
+            case 'pull':
+            case 'up':
             case 'convert':
             case 'cp':
             case 'create':
@@ -46,7 +49,6 @@ class DynamicDockerCommand extends Command
             case 'pause':
             case 'port':
             case 'ps':
-            case 'pull':
             case 'push':
             case 'restart':
             case 'rm':
@@ -55,11 +57,10 @@ class DynamicDockerCommand extends Command
             case 'stop':
             case 'top':
             case 'unpause':
-            case 'up':
             case 'version':
                 return $process->dockerCompose($this->tokens)->getExitCode();
         }
-        if (! $process->isUp()) {
+        if (! $project->isUp()) {
             $this->warn('Please start containers before running docker commands');
 
             return self::FAILURE;
@@ -74,7 +75,7 @@ class DynamicDockerCommand extends Command
             return Artisan::call('list', [], $this->getOutput());
         }
         if ($this->tokens[0] === 'debug') {
-            return $process->withXdebug()->artisan(array_slice($this->tokens, 1))->getExitCode();
+            return $process->xdebug()->artisan(array_slice($this->tokens, 1))->getExitCode();
         }
         // Run as Artisan command if first token contains colon
         if (str_contains($this->tokens[0], ':')) {
@@ -87,7 +88,7 @@ class DynamicDockerCommand extends Command
             case 'artisan':
                 return $process->artisan(array_slice($this->tokens, 1))->getExitCode();
             case 'dusk':
-                return $process->withEnvironmentVariables([
+                return $process->setEnvironment([
                     'APP_URL' => 'http://nginx',
                     'DUSK_DRIVER_URL' => 'http://selenium:4444/wd/hub',
                 ])->artisan(['dusk'])->getExitCode();
@@ -121,7 +122,7 @@ class DynamicDockerCommand extends Command
         switch ($this->tokens[0]) {
             case 'root':
             case 'root-shell':
-                $process = $process->asUser('root');
+                $process->user('root');
                 if (count($this->tokens) === 1) {
                     return $process->interactive()->app(['bash'])->getExitCode();
                 }
@@ -130,7 +131,7 @@ class DynamicDockerCommand extends Command
             case 'shell':
             case 'zsh':
                 if (count($this->tokens) === 1) {
-                    return $process->interactive()->app(['zsh'], true)->getExitCode();
+                    return $process->interactive()->app(['zsh'])->getExitCode();
                 }
 
                 return $process->app(['zsh', '-c', implode(' ', array_slice($this->tokens, 1))])->getExitCode();
@@ -150,7 +151,6 @@ class DynamicDockerCommand extends Command
     {
         $reflection = new ReflectionClass($input);
         if ($reflection->hasProperty('tokens')) {
-            /** @noinspection PhpUnhandledExceptionInspection */
             $prop = $reflection->getProperty('tokens');
             $prop->setAccessible(true);
             $this->tokens = $prop->getValue($input);

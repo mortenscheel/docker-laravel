@@ -3,12 +3,12 @@
 namespace App\Providers;
 
 use App\Commands\Local\AdhocCommand;
-use App\Service\ProcessService;
-use App\Service\ProjectService;
+use App\ProcessBuilder;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\ServiceProvider;
 use Intonate\TinkerZero\TinkerZeroServiceProvider;
 use ReflectionClass;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,8 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->bind('process-manager', ProcessService::class);
-        $this->app->bind('project-manager', ProjectService::class);
+        $this->app->bind(ProcessBuilder::class, function () {
+            return new ProcessBuilder(new ConsoleOutput());
+        });
     }
 
     public function register()
