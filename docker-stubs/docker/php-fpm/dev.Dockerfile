@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     zsh \
     default-mysql-client \
     # Install PHP extensions \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl calendar \
     # Xdebug
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \

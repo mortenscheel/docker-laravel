@@ -89,12 +89,13 @@ class ProcessBuilder
         $interactive = in_array($command[0], [
             'tinker',
             'docs',
+            'test'
         ], true);
 
         return $this->interactive($interactive)->php([
             'artisan',
-            '--ansi',
             ...$command,
+            '--ansi',
         ]);
     }
 
@@ -141,8 +142,8 @@ class ProcessBuilder
     {
         return $this->app([
             'composer',
-            '--ansi',
             ...$this->asArray($command),
+            '--ansi',
         ]);
     }
 

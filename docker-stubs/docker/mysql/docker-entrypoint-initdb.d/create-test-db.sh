@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-command=
+
 if [[ -n "$MYSQL_PASSWORD" ]] && [[ -n "$MYSQL_USER" ]]; then
     mysql --user=root --password="$MYSQL_ROOT_PASSWORD" <<-EOSQL
     CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE}_test;
