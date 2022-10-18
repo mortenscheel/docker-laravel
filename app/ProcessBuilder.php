@@ -89,7 +89,7 @@ class ProcessBuilder
         $interactive = in_array($command[0], [
             'tinker',
             'docs',
-            'test'
+            'test',
         ], true);
 
         return $this->interactive($interactive)->php([
