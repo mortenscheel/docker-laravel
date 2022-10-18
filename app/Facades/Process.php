@@ -4,6 +4,7 @@ namespace App\Facades;
 
 use App\ProcessBuilder;
 use Illuminate\Support\Facades\Facade;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 /**
  * @method static ProcessBuilder command(array|string $command)
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static ProcessBuilder xdebug()
  * @method static ProcessBuilder timeout(?float $timeout)
  * @method static ProcessBuilder make()
+ * @method static SymfonyProcess run(array|string $command = null)
  * @method static int getExitCode()
  * @method static string getOutput()
  */

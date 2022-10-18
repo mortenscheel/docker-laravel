@@ -5,6 +5,7 @@
 namespace App\Commands;
 
 use App\Facades\Process;
+use App\ProcessBuilder;
 use App\Service\ProjectService;
 use function array_slice;
 use function count;
@@ -74,19 +75,85 @@ class DynamicDockerCommand extends Command
             // Call artisan list in the laravel-docker project
             return Artisan::call('list', [], $this->getOutput());
         }
-        if ($this->tokens[0] === 'debug') {
-            return $process->xdebug()->artisan(array_slice($this->tokens, 1))->getExitCode();
+
+        return $this->processTokens($this->tokens);
+    }
+
+    private function processTokens(array $tokens, ProcessBuilder $process = null): int
+    {
+        $process = $process ?? Process::make();
+        if ($tokens[0] === 'debug') {
+            return $process->xdebug()->artisan(array_slice($tokens, 1))->getExitCode();
+        }
+        if ($tokens[0] === 'xdebug') {
+            $loaded = Process::app([
+                'grep',
+                '-q',
+                '^zend_extension',
+                '/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini',
+            ])->silent()->run()->isSuccessful();
+            switch($tokens[1] ?? 'status') {
+                case 'on':
+                case '1':
+                case 'start':
+                    if ($loaded) {
+                        $this->info('Xdebug was already loaded');
+
+                        return self::SUCCESS;
+                    }
+                    $success = $process->user('root')->app([
+                        'sed',
+                        '-i',
+                        's/^#zend_extension=xdebug/zend_extension=xdebug/g',
+                        '/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini',
+                    ])->silent()->run()->isSuccessful();
+                    if ($success) {
+                        $this->info('Xdebug loaded');
+
+                        return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
+                    }
+                    $this->error('Failed to load xdebug');
+
+                    return self::FAILURE;
+                case 'off':
+                case '0':
+                case 'stop':
+                    if (! $loaded) {
+                        $this->info('Xdebug was already unloaded');
+
+                        return self::SUCCESS;
+                    }
+                    $success = Process::user('root')->app([
+                        'sed',
+                        '-i',
+                        's/^zend_extension=xdebug/#zend_extension=xdebug/g',
+                        '/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini',
+                    ])->silent()->run()->isSuccessful();
+                    if ($success) {
+                        $this->info('Xdebug unloaded');
+
+                        return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
+                    }
+                    $this->error('Failed to unload xdebug');
+
+                    return self::FAILURE;
+
+                case 'status':
+                    $this->info('Xdebug is '.($loaded ? 'loaded' : 'not loaded'));
+
+                    return self::SUCCESS;
+            }
         }
         // Run as Artisan command if first token contains colon
-        if (str_contains($this->tokens[0], ':')) {
-            return $process->artisan($this->tokens)->getExitCode();
+        if (str_contains($tokens[0], ':')) {
+            return $process->artisan($tokens)->getExitCode();
         }
 
         // Artisan commands
-        switch ($this->tokens[0]) {
+        switch ($tokens[0]) {
             case 'a':
             case 'artisan':
-                return $process->artisan(array_slice($this->tokens, 1))->getExitCode();
+                return $process->artisan(array_slice($tokens, 1))->getExitCode();
             case 'dusk':
                 return $process->setEnvironment([
                     'APP_URL' => 'http://nginx',
@@ -104,46 +171,46 @@ class DynamicDockerCommand extends Command
             case 'completion':
             case 'clear-compiled':
             case 'about':
-                return $process->artisan($this->tokens)->getExitCode();
+                return $process->artisan($tokens)->getExitCode();
         }
 
         // Composer
-        switch ($this->tokens[0]) {
+        switch ($tokens[0]) {
             case 'c':
             case 'composer':
-                return $process->composer(array_slice($this->tokens, 1))->getExitCode();
+                return $process->composer(array_slice($tokens, 1))->getExitCode();
             case 'cr':
-                return $process->composer(['require', ...array_slice($this->tokens, 1)])->getExitCode();
+                return $process->composer(['require', ...array_slice($tokens, 1)])->getExitCode();
             case 'cda':
-                return $process->composer(['dump-autoload', ...array_slice($this->tokens, 1)])->getExitCode();
+                return $process->composer(['dump-autoload', ...array_slice($tokens, 1)])->getExitCode();
         }
 
         // Bash / ZSH
-        switch ($this->tokens[0]) {
+        switch ($tokens[0]) {
             case 'root':
             case 'root-shell':
                 $process->user('root');
-                if (count($this->tokens) === 1) {
+                if (count($tokens) === 1) {
                     return $process->interactive()->app(['bash'])->getExitCode();
                 }
 
-                return $process->app(['bash', '-c', implode(' ', array_slice($this->tokens, 1))])->getExitCode();
+                return $process->app(['bash', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'shell':
             case 'zsh':
-                if (count($this->tokens) === 1) {
+                if (count($tokens) === 1) {
                     return $process->interactive()->app(['zsh'])->getExitCode();
                 }
 
-                return $process->app(['zsh', '-c', implode(' ', array_slice($this->tokens, 1))])->getExitCode();
+                return $process->app(['zsh', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'bash':
-                if (count($this->tokens) === 1) {
-                    return $process->interactive()->app($this->tokens)->getExitCode();
+                if (count($tokens) === 1) {
+                    return $process->interactive()->app($tokens)->getExitCode();
                 }
 
-                return $process->app(['bash', '-c', implode(' ', array_slice($this->tokens, 1))])->getExitCode();
+                return $process->app(['bash', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             default:
                 // Fallback to running as bash command
-                return $process->app(['bash', '-c', implode(' ', $this->tokens)])->getExitCode();
+                return $process->app(['bash', '-c', implode(' ', $tokens)])->getExitCode();
         }
     }
 

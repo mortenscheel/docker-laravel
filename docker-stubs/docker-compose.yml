@@ -8,8 +8,6 @@ services:
         uid: %uid%
       context: ./docker/php-fpm
       dockerfile: dev.Dockerfile
-    environment:
-      PHP_IDE_CONFIG: serverName=%slug%
     user: laravel
     restart: "no"
     extra_hosts:

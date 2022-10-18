@@ -6,6 +6,7 @@ ARG uid
 
 ENV npm_config_cache=/home/laravel/.cache/npm
 ENV npm_config_prefix=/home/laravel/.npm-global
+ENV PHP_IDE_CONFIG="serverName=php-fpm"
 
 # Install system dependencies
 RUN curl -sL https://deb.nodesource.com/setup_%node_version%.x | bash -

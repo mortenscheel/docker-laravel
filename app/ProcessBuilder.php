@@ -24,6 +24,9 @@ class ProcessBuilder
 
     public function __construct(private OutputInterface $output)
     {
+        if (array_key_exists('DL_DEBUG', $_ENV)) {
+            $this->debug = (bool) $_ENV['DL_DEBUG'] ?? false;
+        }
     }
 
     public function make(): ProcessBuilder
@@ -38,12 +41,15 @@ class ProcessBuilder
         return $this;
     }
 
-    public function run(): Process
+    public function run(array|string $command = null): Process
     {
-        if (empty($this->command)) {
+        if (! $command || empty($command)) {
+            $command = $this->command;
+        }
+        if (empty($command)) {
             throw new RuntimeException('No Process defined');
         }
-        $process = new Process($this->command);
+        $process = new Process($this->asArray($command));
         if ($this->debug) {
             fwrite(STDERR, sprintf('Running command (%s): %s'.PHP_EOL, $this->interactive ? 'tty' : 'pty', $process->getCommandLine()));
         }
@@ -54,7 +60,7 @@ class ProcessBuilder
         }
         $process->setTimeout($this->timeout);
         $callback = function ($type, $buffer) {
-            if (! $this->silent) {
+            if (! $this->silent && ! $this->debug) {
                 $this->output->write($buffer);
             }
         };
