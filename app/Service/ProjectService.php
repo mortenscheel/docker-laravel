@@ -17,7 +17,7 @@ class ProjectService
 
     public function isLaravelProject(): bool
     {
-        return $this->process->run('grep laravel\/framework composer.json')->isSuccessful();
+        return Process::silent()->command('grep laravel\/framework composer.json')->run()->isSuccessful();
     }
 
     public function isDockerProject(): bool
