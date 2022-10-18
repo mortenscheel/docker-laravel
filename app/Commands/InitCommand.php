@@ -87,7 +87,7 @@ class InitCommand extends Command
             }
         }
         $this->info('Initialization complete');
-        if (($dockerFilesModified || $envModified) &&
+        if ($dockerFilesModified &&
             ($force || $this->confirm('Build containers?', true))) {
             Process::dockerCompose('build')->interactive()->run();
         }
