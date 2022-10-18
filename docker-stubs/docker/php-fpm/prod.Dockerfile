@@ -24,7 +24,24 @@ RUN apt-get update && apt-get install -y \
     zsh \
     default-mysql-client \
     # Install PHP extensions \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && docker-php-ext-install \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        zip \
+        intl \
+        calendar \
+        ffi \
+        gettext \
+        mysqli \
+        pcov \
+        sockets \
+        xsl \
+        ldap \
+        memcached \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp
 
 RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
