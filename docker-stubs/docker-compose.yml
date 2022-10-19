@@ -15,6 +15,7 @@ services:
     volumes:
       - ./:/var/www
       - "${COMPOSER_HOME}:/home/%username%/.composer"
+      #- './storage/app/code-coverage:/opt/phpstorm-coverage'
     depends_on:
       - db
       - nginx
