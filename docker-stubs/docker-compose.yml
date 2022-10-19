@@ -40,6 +40,9 @@ services:
     volumes:
       - mysql:/var/lib/mysql
       - ./docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./docker/mysql/my.cnf:/etc/my.cnf
+      - ./docker/mysql/my.cnf.d:/etc/my.cnf.d
+      #- ./docker/mysql/import.cnf:/etc/my.cnf.d/01-import.cnf
     networks:
       - app-network
 
