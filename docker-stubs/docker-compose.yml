@@ -39,7 +39,7 @@ services:
     ports:
       - "${FORWARD_DB_PORT:-3306}:3306"
     volumes:
-      - mysql:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
       - ./docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
       - ./docker/mysql/my.cnf:/etc/my.cnf
       - ./docker/mysql/default.cnf:/etc/my.cnf.d/00-default.cnf
@@ -74,7 +74,7 @@ services:
       - app-network
 
 volumes:
-  mysql:
+  mysql-data:
     driver: local
 
 networks:

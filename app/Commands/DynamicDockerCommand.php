@@ -154,6 +154,8 @@ class DynamicDockerCommand extends Command
             case 'a':
             case 'artisan':
                 return $process->artisan(array_slice($tokens, 1))->getExitCode();
+            case 'ms':
+                return $process->artisan('migrate:status')->getExitCode();
             case 'dusk':
                 return $process->setEnvironment([
                     'APP_URL' => 'http://nginx',
