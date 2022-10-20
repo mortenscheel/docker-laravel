@@ -1,19 +1,4 @@
 [mysqld]
-
-innodb_buffer_pool_size = 8G
-innodb_log_buffer_size = 256M
-innodb_log_file_size = 1G
-innodb_write_io_threads=4
-innodb_io_capacity=1000
-innodb_buffer_pool_instances=2
-join_buffer_size=262144
-
-
 # during import
 innodb_flush_log_at_trx_commit = 0
-innodb_fast_shutdown = 0
-innodb_log_file_size=1G
-innodb_buffer_pool_size=4G
-innodb_write_io_threads = 16
-innodb_log_buffer_size = 256M
 innodb_doublewrite=0
