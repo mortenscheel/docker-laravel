@@ -47,9 +47,8 @@ class ProjectService
     public function findAvailablePort(int $preffered, int $attempts = 20): int
     {
         $port = $preffered;
-        $host = $_ENV['DOCKER_LARAVEL_HOST'] ?? 'host.docker.internal';
         do {
-            $handle = @fsockopen($host, $port);
+            $handle = @fsockopen('localhost', $port);
             if (! is_resource($handle)) {
                 return $port;
             }

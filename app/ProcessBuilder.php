@@ -24,8 +24,11 @@ class ProcessBuilder
 
     public function __construct(private OutputInterface $output)
     {
-        if (array_key_exists('DL_DEBUG', $_ENV)) {
-            $this->debug = (bool) $_ENV['DL_DEBUG'] ?? false;
+        if (\array_key_exists('DL_DEBUG', $_ENV)) {
+            $this->debug = (bool) $_ENV['DL_DEBUG'];
+        }
+        if (\array_key_exists('DL_INTERACTIVE', $_ENV)) {
+            $this->interactive = (bool) $_ENV['DL_INTERACTIVE'];
         }
     }
 
@@ -43,7 +46,7 @@ class ProcessBuilder
 
     public function run(array|string $command = null): Process
     {
-        if (! $command || empty($command)) {
+        if (empty($command)) {
             $command = $this->command;
         }
         if (empty($command)) {
@@ -66,7 +69,7 @@ class ProcessBuilder
         };
         $process->run($callback);
         if ($this->debug) {
-            fwrite(STDERR, sprintf('Exit code: %d | Output length: %d'.PHP_EOL, $process->getExitCode(), strlen($process->getOutput())));
+            fwrite(STDERR, sprintf('Exit code: %d | Output length: %d'.PHP_EOL, $process->getExitCode(), \strlen($process->getOutput())));
         }
 
         return $process;
@@ -86,7 +89,7 @@ class ProcessBuilder
     {
         // Ensure TTY mode for interactive commands
         $command = $this->asArray($command);
-        $interactive = in_array($command[0], [
+        $interactive = $this->interactive || \in_array($command[0], [
             'tinker',
             'docs',
             'test',
@@ -203,7 +206,7 @@ class ProcessBuilder
 
     private function asArray(array|string $command): array
     {
-        if (is_string($command)) {
+        if (\is_string($command)) {
             return collect(explode(' ', $command))->map(fn ($arg) => trim($arg))->filter()->all();
         }
 

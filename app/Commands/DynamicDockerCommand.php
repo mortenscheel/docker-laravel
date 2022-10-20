@@ -83,7 +83,7 @@ class DynamicDockerCommand extends Command
     {
         $process = $process ?? Process::make();
         if ($tokens[0] === 'debug') {
-            return $process->xdebug()->artisan(array_slice($tokens, 1))->getExitCode();
+            return $process->xdebug()->interactive()->artisan(array_slice($tokens, 1))->getExitCode();
         }
         if ($tokens[0] === 'xdebug') {
             $loaded = Process::app([
@@ -208,6 +208,8 @@ class DynamicDockerCommand extends Command
                 }
 
                 return $process->app(['bash', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
+            case 'tail':
+                return $process->interactive()->app(['bash', '-c', 'tail -f storage/logs/*.log'])->getExitCode();
             default:
                 // Fallback to running as bash command
                 return $process->app(['bash', '-c', implode(' ', $tokens)])->getExitCode();
