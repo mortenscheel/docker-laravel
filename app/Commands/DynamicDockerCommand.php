@@ -170,6 +170,7 @@ class DynamicDockerCommand extends Command
             case 'env':
             case 'docs':
             case 'db':
+            case 'tinker':
             case 'completion':
             case 'clear-compiled':
             case 'about':
