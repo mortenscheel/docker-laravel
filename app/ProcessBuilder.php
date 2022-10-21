@@ -94,11 +94,15 @@ class ProcessBuilder
             'docs',
             'test',
         ], true);
+        $forceAnsi = [];
+        if (! $interactive && $command[0] !== 'test') {
+            $forceAnsi = ['--ansi'];
+        }
 
         return $this->interactive($interactive)->php([
             'artisan',
             ...$command,
-            '--ansi',
+            ...$forceAnsi,
         ]);
     }
 
