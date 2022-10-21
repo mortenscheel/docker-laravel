@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   app:
-    image: laravel-docker-app:%php_version%
+    image: mono2990/docker-laravel:%php_version%
     container_name: %slug%_app
     build:
       args:
@@ -14,7 +14,7 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./:/var/www
-      - "${COMPOSER_HOME}:/home/%username%/.composer"
+      - "${COMPOSER_HOME:-$HOME/.composer}:/home/%username%/.composer"
       #- './storage/app/code-coverage:/opt/phpstorm-coverage'
     depends_on:
       - db
