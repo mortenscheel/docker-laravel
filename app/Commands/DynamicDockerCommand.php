@@ -160,7 +160,7 @@ class DynamicDockerCommand extends Command
                 return $process->setEnvironment([
                     'APP_URL' => 'http://nginx',
                     'DUSK_DRIVER_URL' => 'http://selenium:4444/wd/hub',
-                ])->artisan(['dusk'])->getExitCode();
+                ])->interactive()->artisan('dusk')->getExitCode();
             case 'list':
             case 'migrate':
             case 'rollback':
