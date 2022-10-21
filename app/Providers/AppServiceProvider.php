@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Commands\Local\AdhocCommand;
 use App\ProcessBuilder;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\ServiceProvider;
@@ -40,6 +39,11 @@ class AppServiceProvider extends ServiceProvider
         $reflection = new ReflectionClass($kernel);
         $prop = $reflection->getProperty('developmentOnlyCommands');
         $prop->setAccessible(true);
-        $prop->setValue($kernel, [...$prop->getValue($kernel), AdhocCommand::class]);
+        /** @noinspection ClassConstantCanBeUsedInspection */
+        $prop->setValue($kernel, [
+            ...$prop->getValue($kernel),
+            'App\Commands\EditCommand',
+            'App\Commands\Local\AdhocCommand',
+        ]);
     }
 }
