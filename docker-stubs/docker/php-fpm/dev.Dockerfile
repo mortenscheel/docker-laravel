@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
         zip \
         intl \
         calendar \
+        soap \
     # Xdebug
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \

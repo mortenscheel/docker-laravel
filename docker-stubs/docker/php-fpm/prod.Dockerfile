@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
         zip \
         intl \
         calendar \
+        soap \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp
 
 RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
