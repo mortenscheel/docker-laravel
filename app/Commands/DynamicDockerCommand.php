@@ -32,6 +32,15 @@ class DynamicDockerCommand extends Command
             return self::FAILURE;
         }
         $process = Process::make();
+        if (empty($this->tokens)) {
+            if ($project->isLaravelProject()) {
+                // Call artisan list in the container
+                return $process->artisan(['list'])->getExitCode();
+            }
+
+            // Call artisan list in the laravel-docker project
+            return Artisan::call('list', [], $this->getOutput());
+        }
         // Local docker-compose commands
         switch ($this->tokens[0]) {
             case 'build':
@@ -65,15 +74,6 @@ class DynamicDockerCommand extends Command
             $this->warn('Please start containers before running docker commands');
 
             return self::FAILURE;
-        }
-        if (empty($this->tokens)) {
-            if ($project->isLaravelProject()) {
-                // Call artisan list in the container
-                return $process->artisan(['list'])->getExitCode();
-            }
-
-            // Call artisan list in the laravel-docker project
-            return Artisan::call('list', [], $this->getOutput());
         }
 
         return $this->processTokens($this->tokens);
