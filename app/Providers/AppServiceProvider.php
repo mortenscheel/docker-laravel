@@ -44,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
             ...$prop->getValue($kernel),
             'App\Commands\EditCommand',
             'App\Commands\Local\AdhocCommand',
+            'Illuminate\Foundation\Console\VendorPublishCommand'
         ]);
     }
 }
