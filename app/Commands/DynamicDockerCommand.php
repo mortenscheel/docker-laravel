@@ -90,6 +90,9 @@ class DynamicDockerCommand extends Command
         if ($tokens[0] === 'debug') {
             return $process->xdebug()->interactive()->artisan(array_slice($tokens, 1))->getExitCode();
         }
+        if ($tokens[0] === 'kill-php-fpm') {
+            return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
+        }
         if ($tokens[0] === 'xdebug') {
             $loaded = Process::app([
                 'grep',
@@ -115,7 +118,7 @@ class DynamicDockerCommand extends Command
                     if ($success) {
                         $this->info('Xdebug loaded');
 
-                        return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
+                        return $this->processTokens(['kill-php-fpm'], Process::silent());
                     }
                     $this->error('Failed to load xdebug');
 
@@ -137,7 +140,7 @@ class DynamicDockerCommand extends Command
                     if ($success) {
                         $this->info('Xdebug unloaded');
 
-                        return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
+                        return $this->processTokens(['kill-php-fpm'], Process::silent());
                     }
                     $this->error('Failed to unload xdebug');
 
