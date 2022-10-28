@@ -34,6 +34,11 @@ class DynamicDockerCommand extends Command
         $process = Process::make();
         if (empty($this->tokens)) {
             if ($project->isLaravelProject()) {
+                if (! $project->isUp()) {
+                    $this->warn('Please start containers before running docker commands');
+
+                    return self::FAILURE;
+                }
                 // Call artisan list in the container
                 return $process->artisan(['list'])->getExitCode();
             }

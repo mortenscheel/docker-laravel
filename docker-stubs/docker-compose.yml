@@ -1,21 +1,22 @@
 version: "3.7"
 services:
   app:
-    image: mono2990/docker-laravel:%php_version%
-    container_name: %slug%_app
+    image: mono2990/docker-laravel:%php_version%-dev
+    container_name: "%slug%_app"
+    restart: unless-stopped
     build:
       args:
-        uid: %uid%
+        uid: "%uid%"
       context: ./docker/php-fpm
       dockerfile: dev.Dockerfile
     user: laravel
-    restart: "no"
+
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./:/var/www
-      - "${COMPOSER_HOME:-$HOME/.composer}:/home/%username%/.composer"
-      #- './storage/app/code-coverage:/opt/phpstorm-coverage'
+      - "${COMPOSER_HOME:-$HOME/.composer}:/home/laravel/.composer"
+      - './storage/app/code-coverage:/opt/phpstorm-coverage'
     depends_on:
       - db
       - nginx
@@ -24,8 +25,8 @@ services:
 
   db:
     image: mysql/mysql-server:8.0
-    container_name: %slug%_db
-    restart: "no"
+    container_name: "%slug%_db"
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_TEST_DATABASE: ${DB_TEST_DATABASE:-"$DB_DATABASE"_test}
@@ -51,8 +52,8 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: %slug%_nginx
-    restart: "no"
+    container_name: "%slug%_nginx"
+    restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -65,6 +66,8 @@ services:
 
   selenium:
     image: "${SELENIUM_IMAGE:-selenium/standalone-chrome}"
+    container_name: "%slug%_selenium"
+    restart: unless-stopped
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:

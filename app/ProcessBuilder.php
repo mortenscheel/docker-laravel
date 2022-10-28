@@ -88,18 +88,14 @@ class ProcessBuilder
     public function artisan(array|string $command): ProcessBuilder
     {
         // Ensure TTY mode for interactive commands
+        $this->interactive();
         $command = $this->asArray($command);
-        $interactive = $this->interactive || \in_array($command[0], [
-            'tinker',
-            'docs',
-            'test',
-        ], true);
         $forceAnsi = [];
-        if (! $interactive && $command[0] !== 'test') {
+        if (! $this->interactive && $command[0] !== 'test') {
             $forceAnsi = ['--ansi'];
         }
 
-        return $this->interactive($interactive)->php([
+        return $this->php([
             'artisan',
             ...$command,
             ...$forceAnsi,
@@ -182,7 +178,11 @@ class ProcessBuilder
 
     public function interactive(bool $interactive = true): ProcessBuilder
     {
-        $this->interactive = $interactive;
+        if (\array_key_exists('DL_INTERACTIVE', $_ENV)) {
+            $this->interactive = (bool) $_ENV['DL_INTERACTIVE'];
+        } else {
+            $this->interactive = $interactive;
+        }
 
         return $this;
     }
