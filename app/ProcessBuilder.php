@@ -52,7 +52,7 @@ class ProcessBuilder
         if (empty($command)) {
             throw new RuntimeException('No Process defined');
         }
-        $process = new Process($this->asArray($command));
+        $process = new Process($this->asArray($command), getcwd(), $_ENV);
         if ($this->debug) {
             fwrite(STDERR, sprintf('Running command (%s): %s'.PHP_EOL, $this->interactive ? 'tty' : 'pty', $process->getCommandLine()));
         }

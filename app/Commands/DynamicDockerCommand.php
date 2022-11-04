@@ -152,6 +152,9 @@ class DynamicDockerCommand extends Command
                     return self::SUCCESS;
             }
         }
+        if ($tokens[0] === 'mysql-tail') {
+            return $process->interactive()->dockerCompose(['exec',  'db', 'bash', '-c', 'tail -f /tmp/*.log'])->getExitCode();
+        }
         // Run as Artisan command if first token contains colon
         if (str_contains($tokens[0], ':')) {
             return $process->artisan($tokens)->getExitCode();
