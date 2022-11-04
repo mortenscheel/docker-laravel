@@ -47,7 +47,7 @@ services:
       - ./docker/mysql/default.cnf:/etc/my.cnf.d/00-default.cnf
       - ./docker/mysql/optimize.cnf:/etc/my.cnf.d/01-optimize.cnf
       #- ./docker/mysql/import.cnf:/etc/my.cnf.d/02-import.cnf
-      #- ./docker/mysql/logging.cnf:/etc/my.cnf.d/03-logging.cnf
+      - ./docker/mysql/logging.cnf:/etc/my.cnf.d/03-logging.cnf
       #- ./docker/mysql/logs/slow.log:/tmp/slow.log
       #- ./docker/mysql/logs/general.log:/tmp/general.log
     networks:
