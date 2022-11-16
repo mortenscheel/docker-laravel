@@ -1,5 +1,5 @@
 {
-    "name": "mortenscheel/laravel-docker",
+    "name": "mortenscheel/docker-laravel",
     "description": "Docker helper for Laravel projects",
     "keywords": ["laravel", "docker", "console", "cli"],
     "homepage": "https://github.com/mortenscheel/laravel-docker",
