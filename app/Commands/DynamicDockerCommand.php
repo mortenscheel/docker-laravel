@@ -87,6 +87,10 @@ class DynamicDockerCommand extends Command
     private function processTokens(array $tokens, ProcessBuilder $process = null): int
     {
         $process = $process ?? Process::make();
+        if ($tokens[0] === '--tty') {
+            $process->interactive();
+            $tokens = array_slice($tokens, 1);
+        }
         if ($tokens[0] === 'debug') {
             return $process->xdebug()->interactive()->artisan(array_slice($tokens, 1))->getExitCode();
         }
