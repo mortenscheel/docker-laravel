@@ -16,12 +16,12 @@
         }
     ],
     "require": {
-        "php": "^8.0",
-        "laravel-zero/framework": "^9.2",
-        "nunomaduro/termwind": "^1.14",
-        "sebastian/diff": "^4.0"
+        "php": "^8.0"
     },
     "require-dev": {
+        "laravel-zero/framework": "^9.2",
+        "nunomaduro/termwind": "^1.14",
+        "sebastian/diff": "^4.0",
         "intonate/tinker-zero": "^1.2",
         "laravel/pint": "^1.2",
         "mockery/mockery": "^1.4.4",
