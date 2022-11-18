@@ -9,6 +9,7 @@ use App\ProcessBuilder;
 use App\Service\ProjectService;
 use function array_slice;
 use function count;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 use LaravelZero\Framework\Commands\Command;
 use ReflectionClass;
@@ -80,6 +81,7 @@ class DynamicDockerCommand extends Command
 
             return self::FAILURE;
         }
+        $this->processConfig();
 
         return $this->processTokens($this->tokens);
     }
@@ -246,5 +248,24 @@ class DynamicDockerCommand extends Command
         }
 
         return parent::run($input, $output);
+    }
+
+    private function processConfig(): void
+    {
+        if ($home = $_SERVER['HOME']) {
+            $path = rtrim($home, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'.docker-laravel.json';
+            if (file_exists($path)) {
+                try {
+                    $config = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+                    if ($alias = Arr::get($config, 'aliases.'.$this->tokens[0])) {
+                        if (! \is_array($alias) && str_contains($alias, ' ')) {
+                            $alias = collect(explode(' ', $alias))->filter()->map(fn ($token) => trim($token))->toArray();
+                        }
+                        $this->tokens = [...$alias, ...array_slice($this->tokens, 1)];
+                    }
+                } catch (\JsonException) {
+                }
+            }
+        }
     }
 }
