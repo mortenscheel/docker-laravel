@@ -171,8 +171,6 @@ class DynamicDockerCommand extends Command
             case 'a':
             case 'artisan':
                 return $process->artisan(array_slice($tokens, 1))->getExitCode();
-            case 'ms':
-                return $process->artisan('migrate:status')->getExitCode();
             case 'dusk':
                 return $process->setEnvironment([
                     'APP_URL' => 'http://nginx',
@@ -199,10 +197,6 @@ class DynamicDockerCommand extends Command
             case 'c':
             case 'composer':
                 return $process->composer(array_slice($tokens, 1))->getExitCode();
-            case 'cr':
-                return $process->composer(['require', ...array_slice($tokens, 1)])->getExitCode();
-            case 'cda':
-                return $process->composer(['dump-autoload', ...array_slice($tokens, 1)])->getExitCode();
         }
 
         // Bash / ZSH
