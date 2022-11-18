@@ -252,7 +252,7 @@ class DynamicDockerCommand extends Command
                 try {
                     $config = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
                     if ($alias = Arr::get($config, 'aliases.'.$this->tokens[0])) {
-                        if (! \is_array($alias) && str_contains($alias, ' ')) {
+                        if (! \is_array($alias)) {
                             $alias = collect(explode(' ', $alias))->filter()->map(fn ($token) => trim($token))->toArray();
                         }
                         $this->tokens = [...$alias, ...array_slice($this->tokens, 1)];
