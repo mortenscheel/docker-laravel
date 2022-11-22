@@ -5,6 +5,7 @@
 namespace App\Commands;
 
 use App\Facades\Process;
+use App\LocalEnvironment;
 use App\ProcessBuilder;
 use App\Service\ProjectService;
 use function array_slice;
@@ -25,7 +26,7 @@ class DynamicDockerCommand extends Command
 
     private array $tokens;
 
-    public function handle(ProjectService $project): int
+    public function handle(ProjectService $project, LocalEnvironment $config): int
     {
         if (! $project->isDockerProject()) {
             $this->error('No docker-compose environment detected');
@@ -246,20 +247,11 @@ class DynamicDockerCommand extends Command
 
     private function processConfig(): void
     {
-        if ($home = $_SERVER['HOME']) {
-            $path = rtrim($home, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'.docker-laravel.json';
-            if (file_exists($path)) {
-                try {
-                    $config = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
-                    if ($alias = Arr::get($config, 'aliases.'.$this->tokens[0])) {
-                        if (! \is_array($alias)) {
-                            $alias = collect(explode(' ', $alias))->filter()->map(fn ($token) => trim($token))->toArray();
-                        }
-                        $this->tokens = [...$alias, ...array_slice($this->tokens, 1)];
-                    }
-                } catch (\JsonException) {
-                }
+        if ($alias = Arr::get((new LocalEnvironment)->getConfig('aliases'), 'aliases.'.$this->tokens[0])) {
+            if (! \is_array($alias)) {
+                $alias = collect(explode(' ', $alias))->filter()->map(fn ($token) => trim($token))->toArray();
             }
+            $this->tokens = [...$alias, ...array_slice($this->tokens, 1)];
         }
     }
 }
