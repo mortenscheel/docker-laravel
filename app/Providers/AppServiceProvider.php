@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\ProcessBuilder;
+use App\Service\ProjectService;
+use Dotenv\Dotenv;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\ServiceProvider;
 use Intonate\TinkerZero\TinkerZeroServiceProvider;
@@ -21,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProcessBuilder::class, function () {
             return new ProcessBuilder(new ConsoleOutput());
         });
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $project = $this->app->make(ProjectService::class);
+        if ($project->isDockerProject() && $project->hasEnvFile()) {
+            Dotenv::createMutable(getcwd())->load();
+        }
     }
 
     public function register()

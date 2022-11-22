@@ -13,6 +13,7 @@ use Symfony\Component\Process\Process as SymfonyProcess;
  * @method static ProcessBuilder app(array|string $command)
  * @method static ProcessBuilder dockerCompose(array|string $command)
  * @method static ProcessBuilder composer(array|string $command)
+ * @method static ProcessBuilder query(string $command)
  * @method static ProcessBuilder user(string $username)
  * @method static ProcessBuilder setEnvironement(array $environment)
  * @method static ProcessBuilder mergeEnvironement(array $environment)

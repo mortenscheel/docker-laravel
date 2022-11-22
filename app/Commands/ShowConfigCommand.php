@@ -35,6 +35,7 @@ class ShowConfigCommand extends Command
                 $this->comment('Environment variables:');
                 dump($env->getEnvironment());
             }
+
             return self::SUCCESS;
         }
         $this->warn('No config found. Create it with config:edit');

@@ -18,8 +18,8 @@ class LocalEnvironment
     }
 
     /**
-     * @param string|null $key
-     * @param mixed|null $default
+     * @param  string|null  $key
+     * @param  mixed|null  $default
      * @return mixed
      */
     public function getConfig(string $key = null, mixed $default = null): mixed
@@ -44,6 +44,7 @@ class LocalEnvironment
         if ($key === null) {
             return $_ENV;
         }
+
         return Arr::get($_ENV, $key, $default);
     }
 

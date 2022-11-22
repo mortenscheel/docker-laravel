@@ -225,6 +225,20 @@ class DynamicDockerCommand extends Command
                 return $process->app(['bash', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'tail':
                 return $process->interactive()->app(['bash', '-c', 'tail -f storage/logs/*.log'])->getExitCode();
+            case 'tail-general':
+                $turnOn = Process::query('SET GLOBAL general_log=1;')->silent()->run();
+                if ($turnOn->isSuccessful()) {
+                    return $process->interactive()->command(['tail', '-f', 'docker/mysql/logs/general.log'])->getExitCode();
+                }
+
+                return self::FAILURE;
+            case 'tail-slow':
+                $turnOn = Process::query('SET GLOBAL slow_query_log=1;')->silent()->run();
+                if ($turnOn->isSuccessful()) {
+                    return $process->interactive()->command(['tail', '-f', 'docker/mysql/logs/slow.log'])->getExitCode();
+                }
+
+                return self::FAILURE;
             default:
                 // Fallback to running as bash command
                 return $process->app(['bash', '-c', implode(' ', $tokens)])->getExitCode();

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
@@ -22,6 +23,8 @@ class ProcessBuilder
 
     private bool $debug = false;
 
+    private LocalEnvironment $environment;
+
     public function __construct(private OutputInterface $output)
     {
         if (\array_key_exists('DL_DEBUG', $_ENV)) {
@@ -30,6 +33,7 @@ class ProcessBuilder
         if (\array_key_exists('DL_INTERACTIVE', $_ENV)) {
             $this->interactive = (bool) $_ENV['DL_INTERACTIVE'];
         }
+        $this->environment = app(LocalEnvironment::class);
     }
 
     public function make(): ProcessBuilder
@@ -148,6 +152,27 @@ class ProcessBuilder
             ...$this->asArray($command),
             '--ansi',
         ]);
+    }
+
+    public function query(string $query): ProcessBuilder
+    {
+        if (($username = $this->environment->getEnvironment('DB_USERNAME'))) {
+            $command = ['mysql', "-u$username"];
+            if ($password = $this->environment->getEnvironment('DB_PASSWORD')) {
+                $command[] = "-p$password";
+            }
+            $query = Str::finish($query, ';');
+
+            return $this->dockerCompose([
+                'exec',
+                'db',
+                ...$command,
+                '-e',
+                "$query",
+            ]);
+        }
+
+        return $this;
     }
 
     public function user(string $username): ProcessBuilder
