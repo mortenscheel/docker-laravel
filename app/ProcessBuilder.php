@@ -91,9 +91,14 @@ class ProcessBuilder
 
     public function artisan(array|string $command): ProcessBuilder
     {
-        // Ensure TTY mode for interactive commands
-        $this->interactive();
         $command = $this->asArray($command);
+        // Ensure TTY mode for interactive commands
+        if (! \in_array($command[0], [
+            'test',
+            'list',
+        ])) {
+            $this->interactive();
+        }
         $forceAnsi = [];
         if (! $this->interactive && $command[0] !== 'test') {
             $forceAnsi = ['--ansi'];
