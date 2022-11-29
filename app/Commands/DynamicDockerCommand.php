@@ -25,8 +25,15 @@ class DynamicDockerCommand extends Command
     protected $name = ' ';
 
     private array $tokens;
+    private LocalEnvironment $localEnvironment;
 
-    public function handle(ProjectService $project, LocalEnvironment $config): int
+    public function __construct() {
+        parent::__construct();
+        $this->localEnvironment = app(LocalEnvironment::class);
+    }
+
+
+    public function handle(ProjectService $project): int
     {
         if (! $project->isDockerProject()) {
             $this->error('No docker-compose environment detected');
@@ -261,8 +268,11 @@ class DynamicDockerCommand extends Command
 
     private function processConfig(): void
     {
-        $aliases = (new LocalEnvironment)->getConfig('aliases');
+        $aliases = $this->localEnvironment->getConfig('aliases');
         if ($alias = Arr::get($aliases, $this->tokens[0])) {
+            if ($this->localEnvironment->debug()) {
+                fwrite(STDERR, sprintf("Alias '%s' was resolved to '%s'\n", $this->tokens[0], $alias));
+            }
             if (! \is_array($alias)) {
                 $alias = collect(explode(' ', $alias))->filter()->map(fn ($token) => trim($token))->toArray();
             }

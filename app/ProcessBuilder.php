@@ -15,25 +15,21 @@ class ProcessBuilder
 
     private array $appContainerEnvironment = [];
 
-    private bool $interactive = false;
+    private bool $interactive;
 
     private bool $silent = false;
 
     private ?float $timeout = null;
 
-    private bool $debug = false;
+    private bool $debug;
 
     private LocalEnvironment $environment;
 
     public function __construct(private OutputInterface $output)
     {
-        if (\array_key_exists('DL_DEBUG', $_ENV)) {
-            $this->debug = (bool) $_ENV['DL_DEBUG'];
-        }
-        if (\array_key_exists('DL_INTERACTIVE', $_ENV)) {
-            $this->interactive = (bool) $_ENV['DL_INTERACTIVE'];
-        }
         $this->environment = app(LocalEnvironment::class);
+        $this->interactive = $this->environment->shouldForceTty();
+        $this->debug = $this->environment->debug();
     }
 
     public function make(): ProcessBuilder

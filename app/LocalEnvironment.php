@@ -48,6 +48,16 @@ class LocalEnvironment
         return Arr::get($_ENV, $key, $default);
     }
 
+    public function debug(): bool
+    {
+        return (bool) $this->getEnvironment('DL_DEBUG', false);
+    }
+
+    public function shouldForceTty(): bool
+    {
+        return (bool) $this->getEnvironment('DL_INTERACTIVE');
+    }
+
     public function getEditorBinary(): string
     {
         $editor = Arr::get($_ENV, 'VISUAL', Arr::get($_ENV, 'EDITOR', 'vi'));
