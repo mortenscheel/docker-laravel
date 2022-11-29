@@ -261,7 +261,8 @@ class DynamicDockerCommand extends Command
 
     private function processConfig(): void
     {
-        if ($alias = Arr::get((new LocalEnvironment)->getConfig('aliases'), 'aliases.'.$this->tokens[0])) {
+        $aliases = (new LocalEnvironment)->getConfig('aliases');
+        if ($alias = Arr::get($aliases, $this->tokens[0])) {
             if (! \is_array($alias)) {
                 $alias = collect(explode(' ', $alias))->filter()->map(fn ($token) => trim($token))->toArray();
             }
