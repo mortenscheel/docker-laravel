@@ -83,7 +83,7 @@ class DynamicDockerCommand extends Command
             case 'top':
             case 'unpause':
             case 'version':
-                return $process->dockerCompose($this->tokens)->getExitCode();
+                return $process->interactive()->dockerCompose($this->tokens)->getExitCode();
         }
         if (! $project->isUp()) {
             $this->warn('Please start containers before running docker commands');
