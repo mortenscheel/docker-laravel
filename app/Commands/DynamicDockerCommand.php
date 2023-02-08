@@ -25,13 +25,14 @@ class DynamicDockerCommand extends Command
     protected $name = ' ';
 
     private array $tokens;
+
     private LocalEnvironment $localEnvironment;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         $this->localEnvironment = app(LocalEnvironment::class);
     }
-
 
     public function handle(ProjectService $project): int
     {

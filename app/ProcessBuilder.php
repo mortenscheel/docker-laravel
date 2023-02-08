@@ -141,7 +141,8 @@ class ProcessBuilder
     public function dockerCompose(array|string $command): ProcessBuilder
     {
         return $this->command([
-            'docker-compose',
+            'docker',
+            'compose',
             ...$this->asArray($command),
         ]);
     }
