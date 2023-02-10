@@ -99,11 +99,10 @@ class DynamicDockerCommand extends Command
     {
         $process = $process ?? Process::make();
         if ($tokens[0] === '--tty') {
-            $process->interactive();
             $tokens = array_slice($tokens, 1);
         }
         if ($tokens[0] === 'debug') {
-            return $process->xdebug()->interactive()->artisan(array_slice($tokens, 1))->getExitCode();
+            return $process->xdebug()->artisan(array_slice($tokens, 1))->getExitCode();
         }
         if ($tokens[0] === 'kill-php-fpm') {
             return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
@@ -168,7 +167,7 @@ class DynamicDockerCommand extends Command
             }
         }
         if ($tokens[0] === 'mysql-tail') {
-            return $process->interactive()->dockerCompose(['exec',  'db', 'bash', '-c', 'tail -f /tmp/*.log'])->getExitCode();
+            return $process->dockerCompose(['exec',  'db', 'bash', '-c', 'tail -f /tmp/*.log'])->getExitCode();
         }
         // Run as Artisan command if first token contains colon
         if (str_contains($tokens[0], ':')) {
@@ -184,7 +183,7 @@ class DynamicDockerCommand extends Command
                 return $process->setEnvironment([
                     'APP_URL' => 'http://nginx',
                     'DUSK_DRIVER_URL' => 'http://selenium:4444/wd/hub',
-                ])->interactive()->artisan('dusk')->getExitCode();
+                ])->artisan('dusk')->getExitCode();
             case 'list':
             case 'migrate':
             case 'rollback':
@@ -195,6 +194,7 @@ class DynamicDockerCommand extends Command
             case 'docs':
             case 'db':
             case 'tinker':
+                $process->interactive();
             case 'completion':
             case 'clear-compiled':
             case 'about':
@@ -205,6 +205,7 @@ class DynamicDockerCommand extends Command
         switch ($tokens[0]) {
             case 'c':
             case 'composer':
+
                 return $process->composer(array_slice($tokens, 1))->getExitCode();
         }
 
@@ -214,36 +215,36 @@ class DynamicDockerCommand extends Command
             case 'root-shell':
                 $process->user('root');
                 if (count($tokens) === 1) {
-                    return $process->interactive()->app(['bash'])->getExitCode();
+                    return $process->app(['bash'])->getExitCode();
                 }
 
                 return $process->app(['bash', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'shell':
             case 'zsh':
                 if (count($tokens) === 1) {
-                    return $process->interactive()->app(['zsh'])->getExitCode();
+                    return $process->app(['zsh'])->getExitCode();
                 }
 
                 return $process->app(['zsh', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'bash':
                 if (count($tokens) === 1) {
-                    return $process->interactive()->app($tokens)->getExitCode();
+                    return $process->app($tokens)->getExitCode();
                 }
 
                 return $process->app(['bash', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'tail':
-                return $process->interactive()->app(['bash', '-c', 'tail -f storage/logs/*.log'])->getExitCode();
+                return $process->app(['bash', '-c', 'tail -f storage/logs/*.log'])->getExitCode();
             case 'tail-general':
                 $turnOn = Process::query('SET GLOBAL general_log=1;')->silent()->run();
                 if ($turnOn->isSuccessful()) {
-                    return $process->interactive()->command(['tail', '-f', 'docker/mysql/logs/general.log'])->getExitCode();
+                    return $process->command(['tail', '-f', 'docker/mysql/logs/general.log'])->getExitCode();
                 }
 
                 return self::FAILURE;
             case 'tail-slow':
                 $turnOn = Process::query('SET GLOBAL slow_query_log=1;')->silent()->run();
                 if ($turnOn->isSuccessful()) {
-                    return $process->interactive()->command(['tail', '-f', 'docker/mysql/logs/slow.log'])->getExitCode();
+                    return $process->command(['tail', '-f', 'docker/mysql/logs/slow.log'])->getExitCode();
                 }
 
                 return self::FAILURE;

@@ -55,7 +55,7 @@ class LocalEnvironment
 
     public function shouldForceTty(): bool
     {
-        return (bool) $this->getEnvironment('DL_INTERACTIVE');
+        return (bool) $this->getEnvironment('DL_INTERACTIVE', false);
     }
 
     public function getEditorBinary(): string

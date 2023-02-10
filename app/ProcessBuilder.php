@@ -63,7 +63,7 @@ class ProcessBuilder
         }
         $process->setTimeout($this->timeout);
         $callback = function ($type, $buffer) {
-            if (! $this->silent && ! $this->debug) {
+            if (! $this->silent) {
                 $this->output->write($buffer);
             }
         };
@@ -88,6 +88,9 @@ class ProcessBuilder
     public function artisan(array|string $command): ProcessBuilder
     {
         $command = $this->asArray($command);
+        if (! \in_array($command[0], ['test', 'dusk'], true)) {
+            $command[] = '--ansi';
+        }
         // Ensure TTY mode for interactive commands
         if (! \in_array($command[0], [
             'test',
@@ -95,15 +98,10 @@ class ProcessBuilder
         ])) {
             $this->interactive();
         }
-        $forceAnsi = [];
-        if (! $this->interactive && $command[0] !== 'test') {
-            $forceAnsi = ['--ansi'];
-        }
 
         return $this->php([
             'artisan',
             ...$command,
-            ...$forceAnsi,
         ]);
     }
 
@@ -126,8 +124,9 @@ class ProcessBuilder
                 "$name=$value",
             ])->all(),
         ];
-        if (! $this->interactive) {
-            array_unshift($execArgs, '-T');
+        if (!$this->interactive) {
+            $execArgs = ['-T', ...$execArgs];
+            //$execArgs[] = '-T';
         }
 
         return $this->dockerCompose([
@@ -205,11 +204,7 @@ class ProcessBuilder
 
     public function interactive(bool $interactive = true): ProcessBuilder
     {
-        if (\array_key_exists('DL_INTERACTIVE', $_ENV)) {
-            $this->interactive = (bool) $_ENV['DL_INTERACTIVE'];
-        } else {
-            $this->interactive = $interactive;
-        }
+        $this->interactive = $interactive && ! $this->silent;
 
         return $this;
     }
@@ -217,6 +212,7 @@ class ProcessBuilder
     public function silent(bool $silent = true): ProcessBuilder
     {
         $this->silent = $silent;
+        $this->interactive = false;
 
         return $this;
     }

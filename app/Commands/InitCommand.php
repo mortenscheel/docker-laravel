@@ -89,7 +89,7 @@ class InitCommand extends Command
         $this->info('Initialization complete');
         if ($dockerFilesModified &&
             ($force || $this->confirm('Build containers?', true))) {
-            Process::dockerCompose('build')->interactive()->run();
+            Process::dockerCompose('build')->run();
         }
 
         return self::SUCCESS;
