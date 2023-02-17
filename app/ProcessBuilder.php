@@ -3,7 +3,10 @@
 namespace App;
 
 use Illuminate\Support\Str;
+use function in_array;
+use function is_string;
 use RuntimeException;
+use function strlen;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
@@ -69,7 +72,7 @@ class ProcessBuilder
         };
         $process->run($callback);
         if ($this->debug) {
-            fwrite(STDERR, sprintf('Exit code: %d | Output length: %d'.PHP_EOL, $process->getExitCode(), \strlen($process->getOutput())));
+            fwrite(STDERR, sprintf('Exit code: %d | Output length: %d'.PHP_EOL, $process->getExitCode(), strlen($process->getOutput())));
         }
 
         return $process;
@@ -88,11 +91,11 @@ class ProcessBuilder
     public function artisan(array|string $command): ProcessBuilder
     {
         $command = $this->asArray($command);
-        if (! \in_array($command[0], ['test', 'dusk'], true)) {
+        if (! in_array($command[0], ['test', 'dusk'], true)) {
             $command[] = '--ansi';
         }
         // Ensure TTY mode for interactive commands
-        if (! \in_array($command[0], [
+        if (! in_array($command[0], [
             'test',
             'list',
         ])) {
@@ -124,7 +127,7 @@ class ProcessBuilder
                 "$name=$value",
             ])->all(),
         ];
-        if (!$this->interactive) {
+        if (! $this->interactive) {
             $execArgs = ['-T', ...$execArgs];
             //$execArgs[] = '-T';
         }
@@ -233,7 +236,7 @@ class ProcessBuilder
 
     private function asArray(array|string $command): array
     {
-        if (\is_string($command)) {
+        if (is_string($command)) {
             return collect(explode(' ', $command))->map(fn ($arg) => trim($arg))->filter()->all();
         }
 

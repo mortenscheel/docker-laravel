@@ -1,5 +1,8 @@
 <?php
 
+use App\Commands\DefaultCommand;
+use Illuminate\Foundation\Console\StubPublishCommand;
+
 return [
 
     /*
@@ -13,7 +16,7 @@ return [
     |
     */
 
-    'default' => \App\Commands\DynamicDockerCommand::class,
+    'default' => DefaultCommand::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -55,13 +58,7 @@ return [
     */
 
     'hidden' => [
-        NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
-        \Illuminate\Foundation\Console\StubPublishCommand::class,
-        Symfony\Component\Console\Command\DumpCompletionCommand::class,
-        Symfony\Component\Console\Command\HelpCommand::class,
-        Illuminate\Console\Scheduling\ScheduleRunCommand::class,
-        Illuminate\Console\Scheduling\ScheduleListCommand::class,
-        Illuminate\Console\Scheduling\ScheduleFinishCommand::class,
+        StubPublishCommand::class,
         Illuminate\Foundation\Console\VendorPublishCommand::class,
         LaravelZero\Framework\Commands\StubPublishCommand::class,
     ],
@@ -78,5 +75,11 @@ return [
     */
 
     'remove' => [
+        NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
+        Symfony\Component\Console\Command\DumpCompletionCommand::class,
+        Symfony\Component\Console\Command\HelpCommand::class,
+        Illuminate\Console\Scheduling\ScheduleRunCommand::class,
+        Illuminate\Console\Scheduling\ScheduleListCommand::class,
+        Illuminate\Console\Scheduling\ScheduleFinishCommand::class,
     ],
 ];
