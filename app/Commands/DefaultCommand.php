@@ -254,11 +254,6 @@ class DefaultCommand extends Command
         }
     }
 
-    protected function configure()
-    {
-        $this->ignoreValidationErrors();
-    }
-
     /**
      * @param  \App\ProxyInput  $input
      * @param  \Symfony\Component\Console\Output\OutputInterface  $output
@@ -266,7 +261,7 @@ class DefaultCommand extends Command
      */
     public function run(InputInterface $input, OutputInterface $output): int
     {
-        $this->tokens = $input->proxyTokens;
+        $this->tokens = $input->commandTokens;
 
         return parent::run($input, $output);
     }

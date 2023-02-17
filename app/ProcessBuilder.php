@@ -91,7 +91,7 @@ class ProcessBuilder
     public function artisan(array|string $command): ProcessBuilder
     {
         $command = $this->asArray($command);
-        if (! in_array($command[0], ['test', 'dusk'], true)) {
+        if (! in_array($command[0], ['test', 'dusk'], true) && ! in_array('--no-ansi', $command, true)) {
             $command[] = '--ansi';
         }
         // Ensure TTY mode for interactive commands
@@ -172,7 +172,7 @@ class ProcessBuilder
                 'db',
                 ...$command,
                 '-e',
-                "$query",
+                $query,
             ]);
         }
 
