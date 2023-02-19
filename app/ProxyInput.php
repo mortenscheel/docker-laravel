@@ -8,6 +8,11 @@ use function in_array;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputDefinition;
 
+/**
+ * The purpose of ProxyInput is to
+ * 1: Make all CLI arguments available to DefaultCommand. Some would otherwise be consumed by Symfony.
+ * 2: Control whether Symfony invokes DefaultCommand or a native Docker-Laravel command.
+ */
 class ProxyInput extends ArgvInput
 {
     public array $proxyTokens;
