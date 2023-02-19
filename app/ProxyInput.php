@@ -26,6 +26,7 @@ class ProxyInput extends ArgvInput
         parent::__construct($this->nativeTokens, $definition);
     }
 
+    /** @noinspection MissingOrEmptyGroupStatementInspection */
     private function processTokens(array $args): void
     {
         $this->nativeTokens = $args;
@@ -33,19 +34,14 @@ class ProxyInput extends ArgvInput
         $this->proxy = true;
         if (count($args) === 2 && in_array($args[1], ['--version', '-v'])) {
             // Don't proxy --version if it's the only argument
-            $this->proxy = false;
         } elseif (count($args) > 1 && str_starts_with($args[1], 'app:')) {
             // Don't proxy laravel-zero app:* commands
-            $this->proxy = false;
         } elseif (count($args) > 1 && in_array($args[1], ['config:show', 'config:edit', 'init'])) {
             // Don't proxy Docker Laravel commands
-            $this->proxy = false;
         } elseif (count($args) > 2 && in_array($args[1], ['--local', '-l'])) {
             // Don't proxy if first argument is --local
-            $this->proxy = false;
             $this->nativeTokens = [$this->nativeTokens[0], ...array_slice($this->nativeTokens, 2)];
         } else {
-            $this->proxy = true;
             $this->nativeTokens = [$args[0]];
         }
     }
