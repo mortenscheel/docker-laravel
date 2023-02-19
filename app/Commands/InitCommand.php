@@ -49,7 +49,6 @@ class InitCommand extends Command
         ];
         $files = Finder::create()->in(base_path('docker-stubs'))->ignoreDotFiles(false)->files();
         $dockerFilesModified = false;
-        $envModified = false;
         foreach ($files as $file) {
             $contents = Str::replace(
                 array_keys($replacements),

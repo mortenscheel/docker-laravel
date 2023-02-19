@@ -51,7 +51,6 @@ class DefaultCommand extends Command
                 // Call artisan list in the container
                 return $process->artisan(['list'])->getExitCode();
             }
-
             // Call artisan list in the laravel-docker project
             return Artisan::call('list', [], $this->getOutput());
         }
@@ -113,7 +112,7 @@ class DefaultCommand extends Command
                 '^zend_extension',
                 '/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini',
             ])->silent()->run()->isSuccessful();
-            switch($tokens[1] ?? 'status') {
+            switch ($tokens[1] ?? 'status') {
                 case 'on':
                 case '1':
                 case 'start':
@@ -158,7 +157,6 @@ class DefaultCommand extends Command
                     $this->error('Failed to unload xdebug');
 
                     return self::FAILURE;
-
                 case 'status':
                     $this->info('Xdebug is '.($loaded ? 'loaded' : 'not loaded'));
 
@@ -166,13 +164,12 @@ class DefaultCommand extends Command
             }
         }
         if ($tokens[0] === 'mysql-tail') {
-            return $process->dockerCompose(['exec',  'db', 'bash', '-c', 'tail -f /tmp/*.log'])->getExitCode();
+            return $process->dockerCompose(['exec', 'db', 'bash', '-c', 'tail -f /tmp/*.log'])->getExitCode();
         }
         // Run as Artisan command if first token contains colon
         if (str_contains($tokens[0], ':')) {
             return $process->artisan($tokens)->getExitCode();
         }
-
         // Artisan commands
         switch ($tokens[0]) {
             case 'a':
@@ -200,16 +197,14 @@ class DefaultCommand extends Command
             case 'about':
                 return $process->artisan($tokens)->getExitCode();
         }
-
         // Composer
         switch ($tokens[0]) {
             case 'c':
             case 'composer':
-
                 return $process->composer(array_slice($tokens, 1))->getExitCode();
         }
-
         // Bash / ZSH
+        $process->interactive();
         switch ($tokens[0]) {
             case 'root':
             case 'root-shell':
@@ -256,12 +251,10 @@ class DefaultCommand extends Command
 
     /**
      * @param  \App\ProxyInput  $input
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
-     * @return int
      */
     public function run(InputInterface $input, OutputInterface $output): int
     {
-        $this->tokens = $input->commandTokens;
+        $this->tokens = $input->proxyTokens;
 
         return parent::run($input, $output);
     }

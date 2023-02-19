@@ -4,6 +4,8 @@ namespace App;
 
 use App\Facades\Process;
 use Illuminate\Support\Arr;
+use JsonException;
+use RuntimeException;
 
 class LocalEnvironment
 {
@@ -17,11 +19,6 @@ class LocalEnvironment
         return file_exists($this->getConfigPath());
     }
 
-    /**
-     * @param  string|null  $key
-     * @param  mixed|null  $default
-     * @return mixed
-     */
     public function getConfig(string $key = null, mixed $default = null): mixed
     {
         if (($path = $this->getConfigPath()) && file_exists($path)) {
@@ -32,7 +29,7 @@ class LocalEnvironment
                 }
 
                 return Arr::get($data, $key, $default);
-            } catch (\JsonException) {
+            } catch (JsonException) {
             }
         }
 
@@ -65,6 +62,6 @@ class LocalEnvironment
         if ($process->isSuccessful()) {
             return trim($process->getOutput());
         }
-        throw new \RuntimeException('No editor binary found');
+        throw new RuntimeException('No editor binary found');
     }
 }
