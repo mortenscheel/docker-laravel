@@ -202,7 +202,7 @@ class ProcessBuilder
 
     public function xdebug(): ProcessBuilder
     {
-        return $this->mergeEnvironment(['XDEBUG_SESSION' => 1]);
+        return $this->mergeEnvironment(['XDEBUG_SESSION' => 1, 'XDEBUG_CONFIG' => 'idekey=PHPSTORM']);
     }
 
     public function interactive(bool $interactive = true): ProcessBuilder

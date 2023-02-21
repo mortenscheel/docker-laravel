@@ -213,14 +213,14 @@ class DefaultCommand extends Command
                     return $process->app(['bash'])->getExitCode();
                 }
 
-                return $process->app(['bash', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
+                return $process->app(['bash', '-i', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'shell':
             case 'zsh':
                 if (count($tokens) === 1) {
                     return $process->app(['zsh'])->getExitCode();
                 }
 
-                return $process->app(['zsh', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
+                return $process->app(['zsh', '-i', '-c', implode(' ', array_slice($tokens, 1))])->getExitCode();
             case 'bash':
                 if (count($tokens) === 1) {
                     return $process->app($tokens)->getExitCode();
