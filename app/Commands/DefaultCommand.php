@@ -191,7 +191,6 @@ class DefaultCommand extends Command
             case 'docs':
             case 'db':
             case 'tinker':
-                $process->interactive();
             case 'completion':
             case 'clear-compiled':
             case 'about':
