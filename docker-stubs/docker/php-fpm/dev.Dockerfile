@@ -1,17 +1,14 @@
 FROM php:%php_version%-fpm
 
 # Arguments defined in docker-compose.yml
-ARG user=laravel
-ARG uid
+ARG UID=1000
+ARG GID=1000
 
-ENV npm_config_cache=/home/laravel/.cache/npm
-ENV npm_config_prefix=/home/laravel/.npm-global
 ENV PHP_IDE_CONFIG="serverName=php-fpm"
 
 # Install system dependencies
 RUN curl -sL https://deb.nodesource.com/setup_%node_version%.x | bash -
 RUN apt-get update && apt-get install -y \
-    git \
     curl \
     libpng-dev \
     libonig-dev \
@@ -50,13 +47,13 @@ RUN mkdir /tmp && chmod -R 777 /tmp
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Create system user to run Composer and Artisan Commands
-RUN useradd -G www-data -u $uid -d /home/$user $user && usermod --shell /usr/bin/zsh $user
-COPY --chown=$user:$user .zshrc /home/$user/
-RUN mkdir -p /home/$user/.composer && \
-    chown -R $user:$user /home/$user
+RUN usermod  --uid $UID www-data
+RUN groupmod --gid $GID www-data
+
+RUN chsh -s /usr/bin/zsh www-data
+RUN mkdir -p /var/www/.config/psysh && chown -R www-data:www-data /var/www
+
+COPY .zshrc /var/www/.zshrc
 
 # Set working directory
-WORKDIR /var/www
-
-USER $user
+WORKDIR /var/www/html
