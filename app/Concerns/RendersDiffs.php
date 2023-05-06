@@ -4,13 +4,14 @@ namespace App\Concerns;
 
 use Illuminate\Support\Str;
 use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\DiffOnlyOutputBuilder;
 
 /** @mixin \Illuminate\Console\Command */
 trait RendersDiffs
 {
-    private function renderDiff(string $from, string $to)
+    private function renderDiff(string $from, string $to): void
     {
-        foreach (explode("\n", (new Differ())->diff($from, $to)) as $line) {
+        foreach (explode("\n", (new Differ(new DiffOnlyOutputBuilder))->diff($from, $to)) as $line) {
             if (Str::startsWith($line, ['+++', '---', '@@ @@'])) {
                 continue;
             }

@@ -12,10 +12,12 @@ use Symfony\Component\Process\Process;
 
 class ProcessBuilder
 {
+    /** @var array<int, string> */
     private array $command = [];
 
     private string $appContainerUser = 'laravel';
 
+    /** @var array<string, string|int> */
     private array $appContainerEnvironment = [];
 
     private bool $interactive;
@@ -35,18 +37,25 @@ class ProcessBuilder
         $this->debug = $this->environment->debug();
     }
 
-    public function make(): ProcessBuilder
+    public function make(): self
     {
         return $this;
     }
 
-    public function command(array|string $command): ProcessBuilder
+    /**
+     * @param  array|string[]|string  $command
+     * @return $this
+     */
+    public function command(array|string $command): self
     {
         $this->command = $this->asArray($command);
 
         return $this;
     }
 
+    /**
+     * @param  array|string[]|string|null  $command
+     */
     public function run(array|string $command = null): Process
     {
         if (empty($command)) {
@@ -55,7 +64,7 @@ class ProcessBuilder
         if (empty($command)) {
             throw new RuntimeException('No Process defined');
         }
-        $process = new Process($this->asArray($command), getcwd(), $_ENV);
+        $process = new Process($this->asArray($command), getcwd() ?: '.', $_ENV);
         if ($this->debug) {
             fwrite(STDERR, sprintf('Running command (%s): %s'.PHP_EOL, $this->interactive ? 'tty' : 'pty', $process->getCommandLine()));
         }
@@ -80,7 +89,7 @@ class ProcessBuilder
 
     public function getExitCode(): int
     {
-        return $this->run()->getExitCode();
+        return $this->run()->getExitCode() ?? 1;
     }
 
     public function getOutput(): string
@@ -88,7 +97,10 @@ class ProcessBuilder
         return $this->run()->getOutput();
     }
 
-    public function artisan(array|string $command): ProcessBuilder
+    /**
+     * @param  array|string[]|string  $command
+     */
+    public function artisan(array|string $command): self
     {
         $command = $this->asArray($command);
         if (! in_array($command[0], ['test', 'dusk'], true) && ! in_array('--no-ansi', $command, true)) {
@@ -108,7 +120,10 @@ class ProcessBuilder
         ]);
     }
 
-    public function php(array|string $command): ProcessBuilder
+    /**
+     * @param  array|string[]|string  $command
+     */
+    public function php(array|string $command): self
     {
         return $this->app([
             'php',
@@ -116,7 +131,10 @@ class ProcessBuilder
         ]);
     }
 
-    public function app(array|string $command): ProcessBuilder
+    /**
+     * @param  array|string[]|string  $command
+     */
+    public function app(array|string $command): self
     {
         $command = $this->asArray($command);
         $execArgs = [
@@ -140,7 +158,10 @@ class ProcessBuilder
         ]);
     }
 
-    public function dockerCompose(array|string $command): ProcessBuilder
+    /**
+     * @param  array|string[]|string  $command
+     */
+    public function dockerCompose(array|string $command): self
     {
         return $this->command([
             'docker',
@@ -149,7 +170,10 @@ class ProcessBuilder
         ]);
     }
 
-    public function composer(array|string $command): ProcessBuilder
+    /**
+     * @param  array|string[]|string  $command
+     */
+    public function composer(array|string $command): self
     {
         return $this->app([
             'composer',
@@ -158,11 +182,13 @@ class ProcessBuilder
         ]);
     }
 
-    public function query(string $query): ProcessBuilder
+    public function query(string $query): self
     {
         if (($username = $this->environment->getEnvironment('DB_USERNAME'))) {
+            /** @var string $username */
             $command = ['mysql', "-u$username"];
             if ($password = $this->environment->getEnvironment('DB_PASSWORD')) {
+                /** @var string $password */
                 $command[] = "-p$password";
             }
             $query = Str::finish($query, ';');
@@ -179,40 +205,46 @@ class ProcessBuilder
         return $this;
     }
 
-    public function user(string $username): ProcessBuilder
+    public function user(string $username): self
     {
         $this->appContainerUser = $username;
 
         return $this;
     }
 
-    public function setEnvironment(array $environment): ProcessBuilder
+    /**
+     * @param  array<string, string|int>  $environment
+     */
+    public function setEnvironment(array $environment): self
     {
         $this->appContainerEnvironment = $environment;
 
         return $this;
     }
 
-    public function mergeEnvironment(array $environment): ProcessBuilder
+    /**
+     * @param  array<string, string|int>  $environment
+     */
+    public function mergeEnvironment(array $environment): self
     {
         $this->appContainerEnvironment = array_merge($this->appContainerEnvironment, $environment);
 
         return $this;
     }
 
-    public function xdebug(): ProcessBuilder
+    public function xdebug(): self
     {
         return $this->mergeEnvironment(['XDEBUG_SESSION' => 1]);
     }
 
-    public function interactive(bool $interactive = true): ProcessBuilder
+    public function interactive(bool $interactive = true): self
     {
         $this->interactive = $interactive && ! $this->silent;
 
         return $this;
     }
 
-    public function silent(bool $silent = true): ProcessBuilder
+    public function silent(bool $silent = true): self
     {
         $this->silent = $silent;
         $this->interactive = false;
@@ -220,20 +252,24 @@ class ProcessBuilder
         return $this;
     }
 
-    public function timeout(?float $timeout): ProcessBuilder
+    public function timeout(?float $timeout): self
     {
         $this->timeout = $timeout;
 
         return $this;
     }
 
-    public function debug(bool $debug = true): ProcessBuilder
+    public function debug(bool $debug = true): self
     {
         $this->debug = $debug;
 
         return $this;
     }
 
+    /**
+     * @param  array|string[]|string  $command
+     * @return array|string[]
+     */
     private function asArray(array|string $command): array
     {
         if (is_string($command)) {

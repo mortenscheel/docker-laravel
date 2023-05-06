@@ -11,7 +11,10 @@ class LocalEnvironment
 {
     public function getConfigPath(): string
     {
-        return rtrim(Arr::get($_SERVER, 'HOME', '~'), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'.docker-laravel.json';
+        /** @var string $home */
+        $home = Arr::get($_SERVER, 'HOME', '~');
+
+        return rtrim($home, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'.docker-laravel.json';
     }
 
     public function hasConfig(): bool
@@ -23,7 +26,10 @@ class LocalEnvironment
     {
         if (($path = $this->getConfigPath()) && file_exists($path)) {
             try {
-                $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+                /** @var string $json */
+                $json = file_get_contents($path);
+                /** @var array<int, mixed> $data */
+                $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
                 if (! $key) {
                     return $data;
                 }
@@ -36,7 +42,10 @@ class LocalEnvironment
         return $default;
     }
 
-    public function getEnvironment(string $key = null, mixed $default = null)
+    /**
+     * @return array|\ArrayAccess|mixed
+     */
+    public function getEnvironment(string $key = null, mixed $default = null): mixed
     {
         if ($key === null) {
             return $_ENV;
