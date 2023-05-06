@@ -23,6 +23,7 @@ class DefaultCommand extends Command
 
     protected $name = 'default';
 
+    /** @var array<int, string> */
     private array $tokens;
 
     private LocalEnvironment $localEnvironment;
@@ -93,6 +94,9 @@ class DefaultCommand extends Command
         return $this->processTokens($this->tokens);
     }
 
+    /**
+     * @param  array|string[]  $tokens
+     */
     private function processTokens(array $tokens, ProcessBuilder $process = null): int
     {
         $process = $process ?? Process::make();
@@ -260,15 +264,19 @@ class DefaultCommand extends Command
 
     private function processConfig(): void
     {
+        /** @var array<string, string> $aliases */
         $aliases = $this->localEnvironment->getConfig('aliases');
         if ($alias = Arr::get($aliases, $this->tokens[0])) {
-            if ($this->localEnvironment->debug()) {
-                fwrite(STDERR, sprintf("Alias '%s' was resolved to '%s'\n", $this->tokens[0], $alias));
-            }
+            /** @var string|string[] $alias */
             if (! is_array($alias)) {
                 $alias = collect(explode(' ', $alias))->filter()->map(fn ($token) => trim($token))->toArray();
             }
-            $this->tokens = [...$alias, ...array_slice($this->tokens, 1)];
+            if ($this->localEnvironment->debug()) {
+                fwrite(STDERR, sprintf("Alias '%s' was resolved to '%s'\n", $this->tokens[0], collect($alias)->join(' ')));
+            }
+            /** @var array<int, string> $tokens */
+            $tokens = [...$alias, ...array_slice($this->tokens, 1)];
+            $this->tokens = $tokens;
         }
     }
 }

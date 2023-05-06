@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         /** @noinspection PhpUnhandledExceptionInspection */
         $project = $this->app->make(ProjectService::class);
         if ($project->isDockerProject() && $project->hasEnvFile()) {
-            Dotenv::createMutable(getcwd())->load();
+            Dotenv::createMutable(getcwd() ?: '.')->load();
         }
     }
 }

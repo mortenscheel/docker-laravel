@@ -16,8 +16,8 @@ class InitCommand extends Command
     protected $signature = 'init {--slug=             : Slug used for container prefix}
                                  {--username=laravel  : Name of the php-fpm user}
                                  {--uid=1000          : Uid of the php-fpm user}
-                                 {--php=8.1           : PHP-FPM version}
-                                 {--node=16           : NodeJS version}
+                                 {--php=8.2           : PHP-FPM version}
+                                 {--node=18           : NodeJS version}
                                  {--f|force           : Skip confirmations}';
 
     protected $description = 'Initialize Docker environment';
@@ -40,6 +40,7 @@ class InitCommand extends Command
         $username = $this->option('username');
         $phpVersion = $this->option('php');
         $nodeVersion = $this->option('node');
+        /** @var array<string, string> $replacements */
         $replacements = [
             '%slug%' => $slug,
             '%uid%' => $uid,
@@ -70,6 +71,7 @@ class InitCommand extends Command
         if (! $dockerFilesModified) {
             $this->comment('No changes to Docker files');
         }
+        /** @var string $envOriginal */
         $envOriginal = $project->disk()->get('.env');
         $envUpdated = $this->updateOrAppendLine('DB_HOST', 'DB_HOST=db', $envOriginal);
         if (! $project->isUp()) {
@@ -82,7 +84,6 @@ class InitCommand extends Command
             $this->renderDiff($envOriginal, $envUpdated);
             if ($force || $this->confirm('Accept changes to .env?', true)) {
                 $project->disk()->put('.env', $envUpdated);
-                $envModified = true;
             }
         }
         $this->info('Initialization complete');
@@ -98,7 +99,7 @@ class InitCommand extends Command
     {
         $pattern = sprintf('/^%s.*$/m', preg_quote($match, '/'));
         if (preg_match($pattern, $subject)) {
-            return preg_replace($pattern, $line, $subject);
+            return preg_replace($pattern, $line, $subject) ?? '';
         }
 
         return rtrim($subject).PHP_EOL.$line.PHP_EOL;

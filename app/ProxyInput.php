@@ -15,12 +15,17 @@ use Symfony\Component\Console\Input\InputDefinition;
  */
 class ProxyInput extends ArgvInput
 {
+    /** @var array<int, string> */
     public array $proxyTokens;
 
+    /** @var array<int, string> */
     private array $nativeTokens;
 
     public bool $proxy = false;
 
+    /**
+     * @param  array|string[]|null  $args
+     */
     public function __construct(array $args = null, InputDefinition $definition = null)
     {
         $args ??= $_SERVER['argv'] ?? [];
@@ -28,7 +33,9 @@ class ProxyInput extends ArgvInput
         parent::__construct($this->nativeTokens, $definition);
     }
 
-    /** @noinspection MissingOrEmptyGroupStatementInspection */
+    /**
+     * @param  array|string[]  $args
+     */
     private function processTokens(array $args): void
     {
         $this->nativeTokens = $args;
