@@ -19,6 +19,8 @@ class ProxyInput extends ArgvInput
 
     private array $nativeTokens;
 
+    public bool $proxy = false;
+
     public function __construct(array $args = null, InputDefinition $definition = null)
     {
         $args ??= $_SERVER['argv'] ?? [];
