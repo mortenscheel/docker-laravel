@@ -109,6 +109,18 @@ class DefaultCommand extends Command
         if ($tokens[0] === 'kill-php-fpm') {
             return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
         }
+        if ($tokens[0] === 'reboot') {
+            if ($service = $tokens[1] ?? null) {
+                $this->info("Removing $service service");
+                $process->interactive()->dockerCompose(['rm', '-sf', $service])->run();
+            } else {
+                $this->info('Removing all services');
+                $process->interactive()->dockerCompose('down')->run();
+            }
+            $this->info('Starting Docker services');
+
+            return $process->interactive()->dockerCompose(['up', '-d'])->getExitCode();
+        }
         if ($tokens[0] === 'xdebug') {
             $loaded = Process::app([
                 'grep',
