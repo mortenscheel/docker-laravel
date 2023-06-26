@@ -15,7 +15,7 @@ class ProcessBuilder
     /** @var array<int, string> */
     private array $command = [];
 
-    private string $appContainerUser = 'laravel';
+    private string $appContainerUser;
 
     /** @var array<string, string|int> */
     private array $appContainerEnvironment = [];
@@ -35,6 +35,7 @@ class ProcessBuilder
         $this->environment = app(LocalEnvironment::class);
         $this->interactive = $this->environment->shouldForceTty();
         $this->debug = $this->environment->debug();
+        $this->appContainerUser = (string) $this->environment->getEnvironment('APP_USER', 'laravel');
     }
 
     public function make(): self
@@ -153,7 +154,7 @@ class ProcessBuilder
         return $this->dockerCompose([
             'exec',
             ...$execArgs,
-            'app',
+            $this->environment->getEnvironment('APP_CONTAINER', 'app'),
             ...$this->asArray($command),
         ]);
     }
@@ -195,7 +196,7 @@ class ProcessBuilder
 
             return $this->dockerCompose([
                 'exec',
-                'db',
+                $this->environment->getEnvironment('DB_CONTAINER', 'db'),
                 ...$command,
                 '-e',
                 $query,
