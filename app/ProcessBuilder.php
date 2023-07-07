@@ -114,6 +114,9 @@ class ProcessBuilder
         ])) {
             $this->interactive();
         }
+        if (in_array('--no-ansi', $command, true)) {
+            $this->interactive(false);
+        }
 
         return $this->php([
             'artisan',
