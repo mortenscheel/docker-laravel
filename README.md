@@ -1,6 +1,14 @@
 # Docker Laravel
 A CLI tool to initialize and manage a Docker environment for a Laravel project.
 
+## Why?
+I liked the simplicity of Laravel Sail, but wanted to have an actual web-server, in stead of just `artisan serve`.
+
+## How?
+In stead of a simple bash script like sail, I built this as a Laravel Zero app in order to take advantage of the functionality from Symfony Commands and Processes.
+
+The first argument provided to docker-laravel is used to determine *where* to send the command (most commands are sent to the app container, but compose commands like `up`, `build` and `pull` are run on the host).
+
 ## Installation
 ```shell
 composer global require mortenscheel/docker-laravel
