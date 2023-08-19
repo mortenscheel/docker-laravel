@@ -105,6 +105,9 @@ class InitCommand extends Command
         $envUpdated = $this->updateOrAppendLine('DB_HOST', 'DB_HOST=db', $envOriginal);
         if ($redis) {
             $envUpdated = $this->updateOrAppendLine('REDIS_HOST', 'REDIS_HOST=redis', $envUpdated);
+            $envUpdated = $this->updateOrAppendLine('QUEUE_CONNECTION', 'QUEUE_CONNECTION=redis', $envUpdated);
+            $envUpdated = $this->updateOrAppendLine('CACHE_DRIVER', 'CACHE_DRIVER=redis', $envUpdated);
+            $envUpdated = $this->updateOrAppendLine('SESSION_DRIVER', 'SESSION_DRIVER=redis', $envUpdated);
         }
         if ($meilisearch) {
             $envUpdated = $this->updateOrAppendLine('SCOUT_DRIVER', 'SCOUT_DRIVER=meilisearch', $envUpdated);
