@@ -201,6 +201,7 @@ class DefaultCommand extends Command
             case 'help':
             case 'migrate':
             case 'rollback':
+            case 'horizon':
             case 'adhoc':
             case 'test':
             case 'optimize':
