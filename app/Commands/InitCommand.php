@@ -174,6 +174,7 @@ class InitCommand extends Command
                             'GID' => $gid,
                             'PHP_VERSION' => $phpVersion,
                             'NODE_VERSION' => $nodeVersion,
+                            'PECL_EXTRA' => '',
                         ],
                         'context' => './docker/php-fpm',
                     ],
@@ -286,8 +287,25 @@ class InitCommand extends Command
                     'app-network',
                 ],
             ];
+            $config['services']['redisinsight'] = [
+                'image' => 'redislabs/redisinsight:latest',
+                'container_name' => "{$slug}_redisinsight",
+                'restart' => 'unless-stopped',
+                'volumes' => [
+                    'redisinsight-data:/db',
+                ],
+                'ports' => [
+                    '${FORWARD_REDISINSIGHT_PORT:-8001}:8001',
+                ],
+                'networks' => [
+                    'app-network',
+                ],
+            ];
             $config['services']['app']['depends_on'][] = 'redis';
+            $config['services']['app']['depends_on'][] = 'redisinsight';
+            $config['services']['app']['build']['args']['PECL_EXTRA'] = 'redis';
             $config['volumes']['redis-data'] = ['driver' => 'local'];
+            $config['volumes']['redisinsight-data'] = ['driver' => 'local'];
         }
         if ($meilisearch) {
             $config['services']['meilisearch'] = [

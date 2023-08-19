@@ -5,6 +5,7 @@ ARG PHP_VERSION="8.2"
 ARG NODE_VERSION="20"
 ARG UID=1000
 ARG GID=1000
+ARG PECL_EXTRA=''
 
 ENV PHP_IDE_CONFIG="serverName=php-fpm"
 ENV NPM_CONFIG_CACHE=/var/www/.cache/npm
@@ -37,8 +38,8 @@ RUN apt-get update && apt-get install -y \
         calendar \
         soap \
     # Xdebug
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
+    && pecl install xdebug $PECL_EXTRA \
+    && docker-php-ext-enable xdebug $PECL_EXTRA \
     && echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp
