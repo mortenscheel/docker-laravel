@@ -1,13 +1,17 @@
-FROM php:%php_version%-fpm
+ARG PHP_VERSION="8.2"
+FROM php:${PHP_VERSION}-fpm
 
-# Arguments defined in docker-compose.yml
+ARG PHP_VERSION="8.2"
+ARG NODE_VERSION="20"
 ARG UID=1000
 ARG GID=1000
 
 ENV PHP_IDE_CONFIG="serverName=php-fpm"
+ENV NPM_CONFIG_CACHE=/var/www/.cache/npm
+ENV NPM_CONFIG_PREFIX=/var/www/.npm-global
 
 # Install system dependencies
-RUN curl -sL https://deb.nodesource.com/setup_%node_version%.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get update && apt-get install -y \
     curl \
     libpng-dev \
@@ -50,10 +54,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN usermod  --uid $UID www-data
 RUN groupmod --gid $GID www-data
 
-RUN chsh -s /usr/bin/zsh www-data
-RUN mkdir -p /var/www/.config/psysh && chown -R www-data:www-data /var/www
+RUN mkdir -p /var/www/.config/psysh /var/www/.composer /var/www/.cache /var/www/.npm-global && chown -R www-data:www-data /var/www
 
+# ZSH
 COPY .zshrc /var/www/.zshrc
+RUN chsh -s /usr/bin/zsh www-data
 
 # Set working directory
 WORKDIR /var/www/html

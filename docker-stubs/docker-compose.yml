@@ -1,21 +1,23 @@
 version: "3.7"
 services:
   app:
-    image: mono2990/docker-laravel:%php_version%-dev
-    container_name: "%slug%_app"
+    image: mono2990/docker-laravel:%PHP_VERSION%-dev
+    container_name: "%SLUG%_app"
     restart: unless-stopped
     build:
       args:
-        UID: "%uid%"
+        UID: "%UID%"
+        GID: "%GID%"
+        PHP_VERSION: "%PHP_VERSION%"
+        NODE_VERSION: "%NODE_VERSION%"
       context: ./docker/php-fpm
-      dockerfile: dev.Dockerfile
-    user: laravel
+    user: www-data
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./:/var/www/html
-      - "${COMPOSER_HOME:-$HOME/.composer}:/home/laravel/.composer"
+      - "${COMPOSER_HOME:-$HOME/.composer}:/var/www/.composer"
       - './storage/app/code-coverage:/opt/phpstorm-coverage'
     depends_on:
       - db
@@ -25,7 +27,7 @@ services:
 
   db:
     image: mysql/mysql-server:8.0
-    container_name: "%slug%_db"
+    container_name: "%SLUG%_db"
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
@@ -47,15 +49,12 @@ services:
       - ./docker/mysql/default.cnf:/etc/my.cnf.d/00-default.cnf
       - ./docker/mysql/optimize.cnf:/etc/my.cnf.d/01-optimize.cnf
       #- ./docker/mysql/import.cnf:/etc/my.cnf.d/02-import.cnf
-      - ./docker/mysql/logging.cnf:/etc/my.cnf.d/03-logging.cnf
-      - ./docker/mysql/logs/slow.log:/tmp/slow.log
-      - ./docker/mysql/logs/general.log:/tmp/general.log
     networks:
       - app-network
 
   nginx:
     image: nginx:alpine
-    container_name: "%slug%_nginx"
+    container_name: "%SLUG%_nginx"
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -69,7 +68,7 @@ services:
 
   selenium:
     image: "${SELENIUM_IMAGE:-selenium/standalone-chrome}"
-    container_name: "%slug%_selenium"
+    container_name: "%SLUG%_selenium"
     restart: unless-stopped
     extra_hosts:
       - 'host.docker.internal:host-gateway'

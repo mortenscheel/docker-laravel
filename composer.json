@@ -32,6 +32,7 @@
         "nunomaduro/larastan": "^2.6.3",
         "nunomaduro/termwind": "^1.15.1",
         "phpro/grumphp": "^1.16",
+        "symfony/yaml": "^6.3",
         "yieldstudio/grumphp-laravel-pint": "^0.0.1"
     },
     "minimum-stability": "dev",

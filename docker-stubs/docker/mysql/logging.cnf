@@ -1,8 +1,0 @@
-[mysqld]
-slow_query_log=10
-long_query_time=2
-#log_queries_not_using_indexes=1
-slow_query_log_file=/tmp/slow.log
-
-general_log=0
-general_log_file=/tmp/general.log

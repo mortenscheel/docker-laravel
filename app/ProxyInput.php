@@ -2,11 +2,12 @@
 
 namespace App;
 
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputDefinition;
+
 use function array_slice;
 use function count;
 use function in_array;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Input\InputDefinition;
 
 /**
  * The purpose of ProxyInput is to

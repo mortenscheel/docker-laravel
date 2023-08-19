@@ -3,12 +3,13 @@
 namespace App;
 
 use Illuminate\Support\Str;
-use function in_array;
-use function is_string;
 use RuntimeException;
-use function strlen;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
+
+use function in_array;
+use function is_string;
+use function strlen;
 
 class ProcessBuilder
 {
@@ -35,7 +36,7 @@ class ProcessBuilder
         $this->environment = app(LocalEnvironment::class);
         $this->interactive = $this->environment->shouldForceTty();
         $this->debug = $this->environment->debug();
-        $this->appContainerUser = (string) $this->environment->getEnvironment('APP_USER', 'laravel');
+        $this->appContainerUser = (string) $this->environment->getEnvironment('APP_USER', 'www-data');
     }
 
     public function make(): self
