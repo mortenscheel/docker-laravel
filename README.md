@@ -22,7 +22,22 @@ alias d="~/.composer/vendor/bin/docker-laravel"
 ```
 ### Initialize project
 ```shell
-d init
+d init --help
+
+Description:
+  Initialize Docker environment
+
+Usage:
+  init [options]
+
+Options:
+      --slug[=SLUG]     Slug used for container prefix
+      --php[=PHP]       PHP-FPM version [default: "8.2"]
+      --node[=NODE]     NodeJS version [default: "20"]
+      --redis           Include Redis service
+      --meilisearch     Include Meilisearch service
+      --selenium        Include Selenium service
+      --update          Update existing environment
 ```
 This will copy the `/docker` folder and `/docker-compose.yml` to your project
 It will also update your `.env` (after you've approved the changes)
