@@ -8,5 +8,5 @@ fi
 if [ $# -gt 0 ]; then
     exec gosu $UID "$@"
 else
-    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+    exec /usr/bin/supervisord
 fi

@@ -239,7 +239,7 @@ class ProcessBuilder
 
     public function xdebug(): self
     {
-        return $this->mergeEnvironment(['XDEBUG_SESSION' => 1, 'XDEBUG_CONFIG' => 'idekey=PHPSTORM']);
+        return $this->mergeEnvironment(['XDEBUG_SESSION' => 1, 'XDEBUG_MODE' => 'debug',  'XDEBUG_CONFIG' => 'client_host=host.docker.internal']);
     }
 
     public function interactive(bool $interactive = true): self

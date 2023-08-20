@@ -53,7 +53,7 @@ RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
 
 RUN cp /usr/local/etc/php/php.ini-$ENVIRONMENT /usr/local/etc/php/php.ini
 COPY php.ini /usr/local/etc/php/conf.d/99-laravel.ini
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
