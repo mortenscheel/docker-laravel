@@ -9,8 +9,7 @@
     ],
     "files": [
         "composer.json",
-        "logo.png",
-        "docker-stubs/docker/php-fpm/.zshrc"
+        "logo.png"
     ],
     "exclude-composer-files": false,
     "exclude-dev-files": false,

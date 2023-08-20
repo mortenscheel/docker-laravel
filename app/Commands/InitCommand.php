@@ -10,13 +10,13 @@ use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
+use function array_key_exists;
+
 class InitCommand extends Command
 {
     use RendersDiffs;
 
     protected $signature = 'init {--slug=             : Slug used for container prefix}
-                                 {--uid=1000          : UID of the php-fpm user}
-                                 {--gid=1000          : GID of the php-fpm user}
                                  {--php=8.2           : PHP-FPM version}
                                  {--node=20           : NodeJS version}
                                  {--redis             : Include Redis service}
@@ -49,8 +49,6 @@ class InitCommand extends Command
         if ($this->option('update')) {
             [
                 $slug,
-                $uid,
-                $gid,
                 $phpVersion,
                 $nodeVersion,
                 $redis,
@@ -59,8 +57,6 @@ class InitCommand extends Command
             ] = $this->detectCurrentConfig();
         } else {
             $slug = Str::slug($this->option('slug') ?: $this->project->pwd());
-            $uid = (string) $this->option('uid');
-            $gid = (string) $this->option('gid');
             $phpVersion = (string) $this->option('php');
             $nodeVersion = (string) $this->option('node');
             $redis = (bool) $this->option('redis');
@@ -69,8 +65,6 @@ class InitCommand extends Command
         }
         $dockerComposeConfig = $this->generateDockerComposeConfig(
             $slug,
-            $uid,
-            $gid,
             $phpVersion,
             $nodeVersion,
             $redis,
@@ -102,28 +96,34 @@ class InitCommand extends Command
         }
         /** @var string $envOriginal */
         $envOriginal = $this->project->disk()->get('.env');
-        $envUpdated = $this->updateOrAppendLine('DB_HOST', 'DB_HOST=db', $envOriginal);
+        $envUpdates = [
+            'DB_HOST' => 'db',
+            'WWWUSER' => rtrim(Process::silent()->run('id -u')->getOutput()),
+        ];
         if ($redis) {
-            $envUpdated = $this->updateOrAppendLine('REDIS_HOST', 'REDIS_HOST=redis', $envUpdated);
-            $envUpdated = $this->updateOrAppendLine('QUEUE_CONNECTION', 'QUEUE_CONNECTION=redis', $envUpdated);
-            $envUpdated = $this->updateOrAppendLine('CACHE_DRIVER', 'CACHE_DRIVER=redis', $envUpdated);
-            $envUpdated = $this->updateOrAppendLine('SESSION_DRIVER', 'SESSION_DRIVER=redis', $envUpdated);
+            $envUpdates = [
+                ...$envUpdates,
+                'REDIS_HOST' => 'redis',
+                'QUEUE_CONNECTION' => 'redis',
+                'CACHE_DRIVER' => 'redis',
+                'SESSION_DRIVER' => 'redis',
+            ];
         }
         if ($meilisearch) {
-            $envUpdated = $this->updateOrAppendLine('SCOUT_DRIVER', 'SCOUT_DRIVER=meilisearch', $envUpdated);
-            $envUpdated = $this->updateOrAppendLine('MEILISEARCH_HOST',
-                'MEILISEARCH_HOST=http://meilisearch:7700',
-                $envUpdated);
-
+            $envUpdates = [
+                ...$envUpdates,
+                'SCOUT_DRIVER' => 'meilisearch',
+                'MEILISEARCH_HOST' => 'http://meilisearch:7700',
+            ];
         }
         if (! $this->project->isUp()) {
-            $envUpdated = $this->updateOrAppendLine('APP_PORT',
-                'APP_PORT='.$this->project->findAvailablePort(80),
-                $envUpdated);
-            $envUpdated = $this->updateOrAppendLine('FORWARD_DB_PORT',
-                'FORWARD_DB_PORT='.$this->project->findAvailablePort(3306),
-                $envUpdated);
+            $envUpdates = [
+                ...$envUpdates,
+                'APP_PORT' => $this->project->findAvailablePort(80),
+                'FORWARD_DB_PORT' => $this->project->findAvailablePort(3306),
+            ];
         }
+        $envUpdated = $this->updateEnvFile($envOriginal, $envUpdates);
         if ($envOriginal === $envUpdated) {
             $this->comment('No changes to .env');
         } else {
@@ -141,20 +141,26 @@ class InitCommand extends Command
         return self::SUCCESS;
     }
 
-    private function updateOrAppendLine(string $match, string $line, string $subject): string
+    /**
+     * @param  array<string, string|int>  $searchReplace
+     */
+    private function updateEnvFile(string $content, array $searchReplace): string
     {
-        $pattern = sprintf('/^%s.*$/m', preg_quote($match, '/'));
-        if (preg_match($pattern, $subject)) {
-            return preg_replace($pattern, $line, $subject) ?? '';
+        foreach ($searchReplace as $match => $value) {
+            $line = "$match=$value";
+            $pattern = sprintf('/^%s.*$/m', preg_quote($match, '/'));
+            if (preg_match($pattern, $content)) {
+                $content = preg_replace($pattern, $line, $content) ?? '';
+            } else {
+                $content = rtrim($content).PHP_EOL.$line.PHP_EOL;
+            }
         }
 
-        return rtrim($subject).PHP_EOL.$line.PHP_EOL;
+        return $content;
     }
 
     private function generateDockerComposeConfig(
         string $slug,
-        string $uid,
-        string $gid,
         string $phpVersion,
         string $nodeVersion,
         bool $redis,
@@ -165,20 +171,21 @@ class InitCommand extends Command
             'version' => '3.7',
             'services' => [
                 'app' => [
-                    'image' => "mono2990/docker-laravel:$phpVersion-dev",
                     'container_name' => "{$slug}_app",
                     'restart' => 'unless-stopped',
                     'build' => [
                         'args' => [
-                            'UID' => $uid,
-                            'GID' => $gid,
                             'PHP_VERSION' => $phpVersion,
                             'NODE_VERSION' => $nodeVersion,
-                            'PECL_EXTRA' => '',
+                            'ENVIRONMENT' => 'development',
                         ],
                         'context' => './docker/php-fpm',
                     ],
-                    'user' => 'www-data',
+                    'environment' => [
+                        'WWWUSER' => '${WWWUSER:-1000}',
+                        'XDEBUG_MODE' => '${DOCKER_XDEBUG_MODE:-debug}',
+                        'XDEBUG_CONFIG' => '${DOCKER_XDEBUG_CONFIG:-client_host=host.docker.internal}',
+                    ],
                     'extra_hosts' => [
                         'host.docker.internal:host-gateway',
                     ],
@@ -218,8 +225,7 @@ class InitCommand extends Command
                         'mysql-data:/var/lib/mysql',
                         './docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d',
                         './docker/mysql/my.cnf:/etc/my.cnf',
-                        './docker/mysql/default.cnf:/etc/my.cnf.d/00-default.cnf',
-                        './docker/mysql/optimize.cnf:/etc/my.cnf.d/01-optimize.cnf',
+                        './docker/mysql/my.cnf.d/:/etc/my.cnf.d/',
                     ],
                     'networks' => [
                         'app-network',
@@ -303,7 +309,6 @@ class InitCommand extends Command
             ];
             $config['services']['app']['depends_on'][] = 'redis';
             $config['services']['app']['depends_on'][] = 'redisinsight';
-            $config['services']['app']['build']['args']['PECL_EXTRA'] = 'redis';
             $config['volumes']['redis-data'] = ['driver' => 'local'];
             $config['volumes']['redisinsight-data'] = ['driver' => 'local'];
         }
@@ -330,20 +335,18 @@ class InitCommand extends Command
     }
 
     /**
-     * @return array{0: string, 1: string, 2: string, 3: string, 4: string, 5: bool, 6: bool, 7: bool}
+     * @return array{0: string, 1: string, 2: string, 3: bool, 4: bool, 5: bool}
      */
     private function detectCurrentConfig(): array
     {
         $config = Yaml::parse((string) $this->project->disk()->get('docker-compose.yml'));
         $slug = Str::before($config['services']['app']['container_name'], '_app');
-        $uid = $config['services']['app']['build']['args']['UID'];
-        $gid = $config['services']['app']['build']['args']['GID'];
         $phpVersion = $config['services']['app']['build']['args']['PHP_VERSION'];
         $nodeVersion = $config['services']['app']['build']['args']['NODE_VERSION'];
-        $redis = \array_key_exists('redis', $config['services']);
-        $meilisearch = \array_key_exists('meilisearch', $config['services']);
-        $selenium = \array_key_exists('selenium', $config['services']);
+        $redis = array_key_exists('redis', $config['services']);
+        $meilisearch = array_key_exists('meilisearch', $config['services']);
+        $selenium = array_key_exists('selenium', $config['services']);
 
-        return [$slug, $uid, $gid, $phpVersion, $nodeVersion, $redis, $meilisearch, $selenium];
+        return [$slug, $phpVersion, $nodeVersion, $redis, $meilisearch, $selenium];
     }
 }

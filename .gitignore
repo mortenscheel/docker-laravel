@@ -6,3 +6,4 @@
 /.env
 /_ide_helper.php
 /database/database.sqlite
+.DS_Store

@@ -1,0 +1,4 @@
+[mysqld]
+# during import
+innodb_flush_log_at_trx_commit = 0
+innodb_doublewrite=0
