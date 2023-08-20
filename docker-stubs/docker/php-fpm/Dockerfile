@@ -9,10 +9,16 @@ ARG ENVIRONMENT="production"
 ENV PHP_IDE_CONFIG="serverName=php-fpm"
 ENV NPM_CONFIG_CACHE=/var/www/.cache/npm
 ENV NPM_CONFIG_PREFIX=/var/www/.npm-global
+ENV DEBIAN_FRONTEND noninteractive
+ENV TZ=UTC
 
-# Install system dependencies
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-    && apt-get update && apt-get install -y \
+    && apt-get update \
+    # System packages
+    && apt-get install -y \
+        locales-all \
         curl \
         libpng-dev \
         libonig-dev \
@@ -27,7 +33,7 @@ RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
         gosu \
         default-mysql-client \
         supervisor \
-        # Install PHP extensions \
+        # PHP extensions \
         && if [[ "$ENVIRONMENT" = "production" ]]; then PECL="redis"; else PECL="xdebug redis"; fi \
         && docker-php-ext-install \
             pdo_mysql \

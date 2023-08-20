@@ -185,6 +185,7 @@ class InitCommand extends Command
                         'WWWUSER' => '${WWWUSER:-1000}',
                         'XDEBUG_MODE' => '${DOCKER_XDEBUG_MODE:-debug}',
                         'XDEBUG_CONFIG' => '${DOCKER_XDEBUG_CONFIG:-client_host=host.docker.internal}',
+                        'TZ' => '${TZ:-UTC}',
                     ],
                     'extra_hosts' => [
                         'host.docker.internal:host-gateway',

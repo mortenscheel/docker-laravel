@@ -14,7 +14,7 @@ zmodule prompt-pwd
 
 # Exposes to prompts how long the last command took to execute, used by asciiship.
 zmodule duration-info
-zmodule sorin
+zmodule minimal
 
 #
 # Completion
