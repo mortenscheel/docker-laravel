@@ -319,7 +319,7 @@ class InitCommand extends Command
                 'container_name' => "{$slug}_meilisearch",
                 'restart' => 'unless-stopped',
                 'volumes' => [
-                    'meilisearch-data:/data',
+                    'meilisearch-data:/meili_data',
                 ],
                 'ports' => [
                     '${FORWARD_MEILISEARCH_PORT:-7700}:7700',
