@@ -70,8 +70,9 @@ COPY zsh/zimrc /var/www/.zimrc
 RUN curl -fsSL -o /var/www/.zim/zimfw.zsh https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
 RUN chsh -s /usr/bin/zsh www-data
 RUN chown -R www-data:www-data /var/www
-RUn runuser -l www-data -c 'zsh -i -c "zimfw install"'
+RUN runuser -l www-data -c 'zsh -i -c "zimfw install"'
 
 # Set entrypoint that updates UID of www-user
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

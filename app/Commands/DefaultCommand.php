@@ -8,15 +8,14 @@ use App\Facades\Process;
 use App\LocalEnvironment;
 use App\ProcessBuilder;
 use App\Service\ProjectService;
+use function array_slice;
+use function count;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
+use function is_array;
 use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use function array_slice;
-use function count;
-use function is_array;
 
 class DefaultCommand extends Command
 {
@@ -108,7 +107,7 @@ class DefaultCommand extends Command
             return $process->xdebug()->artisan(array_slice($tokens, 1))->getExitCode();
         }
         if ($tokens[0] === 'kill-php-fpm') {
-            return $this->processTokens(['root', 'kill', '-USR2', '1'], Process::silent());
+            return $this->processTokens(['root', 'supervisorctl', 'restart', 'php-fpm'], Process::silent());
         }
         if ($tokens[0] === 'reboot') {
             if ($service = $tokens[1] ?? null) {
@@ -165,7 +164,8 @@ class DefaultCommand extends Command
                         '-i',
                         's/^zend_extension=xdebug/#zend_extension=xdebug/g',
                         '/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini',
-                    ])->silent()->run()->isSuccessful();
+                    ])->silent()->run(); //->isSuccessful();
+                    $success = $success->isSuccessful();
                     if ($success) {
                         $this->info('Xdebug unloaded');
 
