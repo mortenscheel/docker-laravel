@@ -8,14 +8,15 @@ use App\Facades\Process;
 use App\LocalEnvironment;
 use App\ProcessBuilder;
 use App\Service\ProjectService;
-use function array_slice;
-use function count;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
-use function is_array;
 use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
+use function array_slice;
+use function count;
+use function is_array;
 
 class DefaultCommand extends Command
 {
@@ -193,7 +194,7 @@ class DefaultCommand extends Command
             case 'artisan':
                 return $process->artisan(array_slice($tokens, 1))->getExitCode();
             case 'dusk':
-                return $process->setEnvironment([
+                return $process->mergeEnvironment([
                     'APP_URL' => 'http://nginx',
                     'DUSK_DRIVER_URL' => 'http://selenium:4444/wd/hub',
                 ])->artisan('dusk')->getExitCode();

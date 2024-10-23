@@ -37,6 +37,15 @@ class ProcessBuilder
         $this->interactive = $this->environment->shouldForceTty();
         $this->debug = $this->environment->debug();
         $this->appContainerUser = (string) $this->environment->getEnvironment('APP_USER', 'www-data');
+        if ($varString = $this->environment->getEnvironment('DL_ENV')) {
+            /** @var array<string,int|string> $vars */
+            $vars = collect(explode(',', $varString))->filter()->mapWithKeys(function ($var) {
+                [$key, $value] = explode('=', $var);
+
+                return [trim($key) => trim($value)];
+            })->all();
+            $this->appContainerEnvironment = $vars;
+        }
     }
 
     public function make(): self
@@ -83,7 +92,7 @@ class ProcessBuilder
         };
         $process->run($callback);
         if ($this->debug) {
-            fwrite(STDERR, sprintf('Exit code: %d | Output length: %d'.PHP_EOL, $process->getExitCode(), strlen($process->getOutput())));
+            fwrite(STDERR, \sprintf('Exit code: %d | Output length: %d'.PHP_EOL, $process->getExitCode(), strlen($process->getOutput())));
         }
 
         return $process;
@@ -152,7 +161,6 @@ class ProcessBuilder
         ];
         if (! $this->interactive) {
             $execArgs = ['-T', ...$execArgs];
-            //$execArgs[] = '-T';
         }
 
         return $this->dockerCompose([
@@ -213,16 +221,6 @@ class ProcessBuilder
     public function user(string $username): self
     {
         $this->appContainerUser = $username;
-
-        return $this;
-    }
-
-    /**
-     * @param  array<string, string|int>  $environment
-     */
-    public function setEnvironment(array $environment): self
-    {
-        $this->appContainerEnvironment = $environment;
 
         return $this;
     }
