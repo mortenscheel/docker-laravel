@@ -19,7 +19,7 @@ class ProcessBuilder
     private string $appContainerUser;
 
     /** @var array<string, string|int> */
-    private array $appContainerEnvironment = [];
+    private array $appContainerEnvironment = ['TERM' => 'xterm-256color'];
 
     private bool $interactive;
 
@@ -37,6 +37,12 @@ class ProcessBuilder
         $this->interactive = $this->environment->shouldForceTty();
         $this->debug = $this->environment->debug();
         $this->appContainerUser = (string) $this->environment->getEnvironment('APP_USER', 'www-data');
+        if ($cols = \shell_exec('tput cols')) {
+            $this->appContainerEnvironment['COLUMNS'] = (int) trim($cols);
+        }
+        if ($rows = \shell_exec('tput lines')) {
+            $this->appContainerEnvironment['LINES'] = (int) trim($rows);
+        }
         if ($varString = $this->environment->getEnvironment('DL_ENV')) {
             /** @var array<string,int|string> $vars */
             $vars = collect(explode(',', $varString))->filter()->mapWithKeys(function ($var) {
@@ -44,7 +50,7 @@ class ProcessBuilder
 
                 return [trim($key) => trim($value)];
             })->all();
-            $this->appContainerEnvironment = $vars;
+            $this->mergeEnvironment($vars);
         }
     }
 
@@ -188,7 +194,7 @@ class ProcessBuilder
      */
     public function composer(array|string $command): self
     {
-        return $this->app([
+        return $this->interactive()->app([
             'composer',
             ...$this->asArray($command),
             '--ansi',

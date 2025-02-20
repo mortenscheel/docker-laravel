@@ -56,7 +56,7 @@ class LocalEnvironment
 
     public function debug(): bool
     {
-        return (bool) $this->getEnvironment('DL_DEBUG', false);
+        return (bool) \getenv('DL_DEBUG');
     }
 
     public function shouldForceTty(): bool
