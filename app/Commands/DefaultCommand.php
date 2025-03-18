@@ -147,7 +147,7 @@ class DefaultCommand extends Command
                     if ($success) {
                         $this->info('Xdebug loaded');
 
-                        return $this->processTokens(['kill-php-fpm'], Process::silent());
+                        return $this->processTokens(['pkill php-fpm'], Process::silent());
                     }
                     $this->error('Failed to load xdebug');
 
@@ -170,7 +170,7 @@ class DefaultCommand extends Command
                     if ($success) {
                         $this->info('Xdebug unloaded');
 
-                        return $this->processTokens(['kill-php-fpm'], Process::silent());
+                        return $this->processTokens(['pkill php-fpm'], Process::silent());
                     }
                     $this->error('Failed to unload xdebug');
 
