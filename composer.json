@@ -21,19 +21,19 @@
         "source": "https://github.com/mortenscheel/laravel-docker"
     },
     "require": {
-        "php": "^8.1",
+        "php": "^8.4",
         "laravel-zero/phar-updater": "^1.3",
         "sebastian/diff": "^5.0.3"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.31",
-        "laravel-zero/framework": "^10.1",
+        "larastan/larastan": "^2.11",
+        "laravel-zero/framework": "^11.36",
         "laravel/pint": "^1.10.3",
-        "nunomaduro/larastan": "^2.6.3",
-        "nunomaduro/termwind": "^1.15.1",
-        "phpro/grumphp": "^1.16",
+        "nunomaduro/termwind": "^2.3",
+        "phpro/grumphp": "^2.12",
         "symfony/yaml": "^6.3",
-        "yieldstudio/grumphp-laravel-pint": "^0.0.1"
+        "yieldstudio/grumphp-laravel-pint": "^1.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -52,9 +52,9 @@
     ],
     "config": {
         "allow-plugins": {
+            "ergebnis/composer-normalize": true,
             "pestphp/pest-plugin": true,
-            "phpro/grumphp": true,
-            "ergebnis/composer-normalize": true
+            "phpro/grumphp": true
         },
         "optimize-autoloader": true,
         "preferred-install": "dist",

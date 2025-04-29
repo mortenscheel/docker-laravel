@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -68,6 +70,6 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
-        \Illuminate\Filesystem\FilesystemServiceProvider::class,
+        Illuminate\Filesystem\FilesystemServiceProvider::class,
     ],
 ];

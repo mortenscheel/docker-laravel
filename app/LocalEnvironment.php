@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 use App\Facades\Process;
+use ArrayAccess;
 use Illuminate\Support\Arr;
 use JsonException;
 use RuntimeException;
+
+use function getenv;
 
 class LocalEnvironment
 {
@@ -22,7 +27,7 @@ class LocalEnvironment
         return file_exists($this->getConfigPath());
     }
 
-    public function getConfig(string $key = null, mixed $default = null): mixed
+    public function getConfig(?string $key = null, mixed $default = null): mixed
     {
         if (($path = $this->getConfigPath()) && file_exists($path)) {
             try {
@@ -43,9 +48,9 @@ class LocalEnvironment
     }
 
     /**
-     * @return array|\ArrayAccess|mixed
+     * @return array|ArrayAccess|mixed
      */
-    public function getEnvironment(string $key = null, mixed $default = null): mixed
+    public function getEnvironment(?string $key = null, mixed $default = null): mixed
     {
         if ($key === null) {
             return $_ENV;
@@ -56,7 +61,7 @@ class LocalEnvironment
 
     public function debug(): bool
     {
-        return (bool) \getenv('DL_DEBUG');
+        return (bool) getenv('DL_DEBUG');
     }
 
     public function shouldForceTty(): bool

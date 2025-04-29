@@ -1,14 +1,14 @@
 includes:
-    - ./vendor/nunomaduro/larastan/extension.neon
+    - ./vendor/larastan/larastan/extension.neon
 
 parameters:
-
     paths:
         - app/
 
     # Level 9 is the highest level
     level: 8
 
+    editorUrl: 'phpstorm://open?file=/Users/morten/tools/docker-laravel/%%relFile%%&line=%%line%%'
 #    ignoreErrors:
 #        - '#PHPDoc tag @var#'
 #

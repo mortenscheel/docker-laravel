@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 use Symfony\Component\Console\Input\ArgvInput;
@@ -19,15 +21,15 @@ class ProxyInput extends ArgvInput
     /** @var array<int, string> */
     public array $proxyTokens;
 
+    public bool $proxy = false;
+
     /** @var array<int, string> */
     private array $nativeTokens;
-
-    public bool $proxy = false;
 
     /**
      * @param  array|string[]|null  $args
      */
-    public function __construct(array $args = null, InputDefinition $definition = null)
+    public function __construct(?array $args = null, ?InputDefinition $definition = null)
     {
         $args ??= $_SERVER['argv'] ?? [];
         $this->processTokens($args);

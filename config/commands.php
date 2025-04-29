@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Commands\DefaultCommand;
 use Illuminate\Foundation\Console\StubPublishCommand;
 

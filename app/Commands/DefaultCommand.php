@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /** @noinspection PhpMissingBreakStatementInspection */
 
 namespace App\Commands;
@@ -50,9 +52,11 @@ class DefaultCommand extends Command
 
                     return self::FAILURE;
                 }
+
                 // Call artisan list in the container
                 return $process->artisan(['list'])->getExitCode();
             }
+
             // Call artisan list in the laravel-docker project
             return Artisan::call('list', [], $this->getOutput());
         }
@@ -96,9 +100,19 @@ class DefaultCommand extends Command
     }
 
     /**
+     * @param  \App\ProxyInput  $input
+     */
+    public function run(InputInterface $input, OutputInterface $output): int
+    {
+        $this->tokens = $input->proxyTokens;
+
+        return parent::run($input, $output);
+    }
+
+    /**
      * @param  array|string[]  $tokens
      */
-    private function processTokens(array $tokens, ProcessBuilder $process = null): int
+    private function processTokens(array $tokens, ?ProcessBuilder $process = null): int
     {
         $process = $process ?? Process::make();
         if ($tokens[0] === '--tty') {
@@ -165,7 +179,7 @@ class DefaultCommand extends Command
                         '-i',
                         's/^zend_extension=xdebug/#zend_extension=xdebug/g',
                         '/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini',
-                    ])->silent()->run(); //->isSuccessful();
+                    ])->silent()->run(); // ->isSuccessful();
                     $success = $success->isSuccessful();
                     if ($success) {
                         $this->info('Xdebug unloaded');
@@ -265,16 +279,6 @@ class DefaultCommand extends Command
                 // Fallback to running as bash command
                 return $process->app(['bash', '-c', implode(' ', $tokens)])->getExitCode();
         }
-    }
-
-    /**
-     * @param  \App\ProxyInput  $input
-     */
-    public function run(InputInterface $input, OutputInterface $output): int
-    {
-        $this->tokens = $input->proxyTokens;
-
-        return parent::run($input, $output);
     }
 
     private function processConfig(): void

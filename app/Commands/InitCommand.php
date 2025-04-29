@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands;
 
 use App\Concerns\RendersDiffs;
@@ -25,13 +27,13 @@ class InitCommand extends Command
                                  {--update            : Update existing environment}
                                  {--f|force           : Skip confirmations}';
 
+    protected $description = 'Initialize Docker environment';
+
     public function __construct(
         private ProjectService $project
     ) {
         parent::__construct();
     }
-
-    protected $description = 'Initialize Docker environment';
 
     public function handle(): int
     {

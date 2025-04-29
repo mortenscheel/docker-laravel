@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 use Illuminate\Support\Str;
@@ -9,6 +11,7 @@ use Symfony\Component\Process\Process;
 
 use function in_array;
 use function is_string;
+use function shell_exec;
 use function strlen;
 
 class ProcessBuilder
@@ -37,10 +40,10 @@ class ProcessBuilder
         $this->interactive = $this->environment->shouldForceTty();
         $this->debug = $this->environment->debug();
         $this->appContainerUser = (string) $this->environment->getEnvironment('APP_USER', 'www-data');
-        if ($cols = \shell_exec('tput cols')) {
+        if ($cols = shell_exec('tput cols')) {
             $this->appContainerEnvironment['COLUMNS'] = (int) trim($cols);
         }
-        if ($rows = \shell_exec('tput lines')) {
+        if ($rows = shell_exec('tput lines')) {
             $this->appContainerEnvironment['LINES'] = (int) trim($rows);
         }
         if ($varString = $this->environment->getEnvironment('DL_ENV')) {
@@ -73,7 +76,7 @@ class ProcessBuilder
     /**
      * @param  array|string[]|string|null  $command
      */
-    public function run(array|string $command = null): Process
+    public function run(array|string|null $command = null): Process
     {
         if (empty($command)) {
             $command = $this->command;
